@@ -1,0 +1,78 @@
+diff --git a/node_modules/@onflow/transport-http/dist/sdk-send-http.js b/node_modules/@onflow/transport-http/dist/sdk-send-http.js
+index 9e1ef18..292fedc 100644
+--- a/node_modules/@onflow/transport-http/dist/sdk-send-http.js
++++ b/node_modules/@onflow/transport-http/dist/sdk-send-http.js
+@@ -1599,15 +1599,6 @@ function _sendTransaction() {
+             ret.tag = ix.tag;
+             ret.transactionId = res.id;
+ 
+-            if (typeof window !== "undefined") {
+-              window.dispatchEvent(new CustomEvent("FLOW::TX", {
+-                detail: {
+-                  txId: ret.transactionId,
+-                  delta: t2 - t1
+-                }
+-              }));
+-            }
+-
+             return _context.abrupt("return", ret);
+ 
+           case 50:
+diff --git a/node_modules/@onflow/transport-http/dist/sdk-send-http.module.js b/node_modules/@onflow/transport-http/dist/sdk-send-http.module.js
+index c3054cd..46fb4cb 100644
+--- a/node_modules/@onflow/transport-http/dist/sdk-send-http.module.js
++++ b/node_modules/@onflow/transport-http/dist/sdk-send-http.module.js
+@@ -1564,15 +1564,6 @@ function _sendTransaction() {
+             ret.tag = ix.tag;
+             ret.transactionId = res.id;
+ 
+-            if (typeof window !== "undefined") {
+-              window.dispatchEvent(new CustomEvent("FLOW::TX", {
+-                detail: {
+-                  txId: ret.transactionId,
+-                  delta: t2 - t1
+-                }
+-              }));
+-            }
+-
+             return _context.abrupt("return", ret);
+ 
+           case 50:
+diff --git a/node_modules/@onflow/transport-http/dist/sdk-send-http.umd.js b/node_modules/@onflow/transport-http/dist/sdk-send-http.umd.js
+index 91b16f4..0ad7004 100644
+--- a/node_modules/@onflow/transport-http/dist/sdk-send-http.umd.js
++++ b/node_modules/@onflow/transport-http/dist/sdk-send-http.umd.js
+@@ -5439,15 +5439,6 @@
+               ret.tag = ix.tag;
+               ret.transactionId = res.id;
+ 
+-              if (typeof window !== "undefined") {
+-                window.dispatchEvent(new CustomEvent("FLOW::TX", {
+-                  detail: {
+-                    txId: ret.transactionId,
+-                    delta: t2 - t1
+-                  }
+-                }));
+-              }
+-
+               return _context.abrupt("return", ret);
+ 
+             case 50:
+diff --git a/node_modules/@onflow/transport-http/src/send-transaction.js b/node_modules/@onflow/transport-http/src/send-transaction.js
+index 21a3cc5..ee999f5 100644
+--- a/node_modules/@onflow/transport-http/src/send-transaction.js
++++ b/node_modules/@onflow/transport-http/src/send-transaction.js
+@@ -105,13 +105,5 @@ export async function sendTransaction(ix, context = {}, opts = {}) {
+   ret.tag = ix.tag
+   ret.transactionId = res.id
+ 
+-  if (typeof window !== "undefined") {
+-    window.dispatchEvent(
+-      new CustomEvent("FLOW::TX", {
+-        detail: {txId: ret.transactionId, delta: t2 - t1},
+-      })
+-    )
+-  }
+-
+   return ret
+ }

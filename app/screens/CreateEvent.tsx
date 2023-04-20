@@ -120,7 +120,7 @@ type Props = {
     route: CreateVaultScreenRouteProp;
 };
 
-export default function CreateVault({ navigation }: Props) {
+export default function CreateEvent({ navigation }: Props) {
 
     const [type, setType] = useState("riddle");
     const [input, setInput] = useState({} as any);

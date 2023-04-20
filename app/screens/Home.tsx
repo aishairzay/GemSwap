@@ -102,7 +102,7 @@ export default function Home({ navigation }: Props) {
     };
 
     const handleGoToCreate = () => {
-        navigation.navigate("CreateVault");
+        navigation.navigate("CreateEvent");
     };
 
     const handleGoToList = () => {
@@ -121,7 +121,7 @@ export default function Home({ navigation }: Props) {
     return (
         <View style={{ ...styles.container }}>
             <View style={styles.centerContainer}>
-                <Text style={styles.text}>Mohar's Vault</Text>
+                <Text style={styles.text}>Gem Swap</Text>
             </View>
             {
                 shouldShowProfileIcon && (
@@ -157,26 +157,10 @@ export default function Home({ navigation }: Props) {
                         fontSize: 16,
                     }}
                 >
-                    Enter a Vault ID
+                    Select an Event:
                 </Text>
-                <KeyboardAvoidingView
-                    style={[styles.inputContainer, { backgroundColor: "white" }]}
-                >
-                    <TextInput
-                        inputMode="numeric"
-                        style={styles.input}
-                        placeholder="Vault ID"
-                        placeholderTextColor="gray"
-                        value={vaultId}
-                        onChangeText={setVaultId}
-                    />
-                </KeyboardAvoidingView>
-                <TouchableOpacity
-                    style={{ marginTop: 0, alignSelf: "flex-start" }}
-                    onPress={handleGoToVault}
-                >
-                    <Text style={styles.headerText}>Go to Vault {vaultId}</Text>
-                </TouchableOpacity>
+                
+                <Text style={styles.headerText}>FlowCon 2023</Text>
                 <View style={styles.dividerContainer}>
                     <Text style={styles.dividerText}>OR</Text>
                 </View>
@@ -184,7 +168,7 @@ export default function Home({ navigation }: Props) {
                     source={lock}
                     style={{ alignSelf: "center", marginTop: 30 }}
                 />
-                <VaultButton onPress={handleGoToCreate} text="Create a new vault" />
+                <VaultButton onPress={handleGoToCreate} text="Create a new Event" />
             </ScrollView>
         </View>
     );

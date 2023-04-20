@@ -110,7 +110,7 @@ type Props = {
     route: VaultScreenRouteProp;
 };
 
-export default function Vault({ route, navigation }: Props) {
+export default function EventHome({ route, navigation }: Props) {
     const [vault, setVault] = React.useState<any | null>(null);
     const [password, setPassword] = React.useState<string>("");
     const [isLocked, setIsLocked] = React.useState<boolean>(true);

@@ -16,6 +16,30 @@ pub contract GemGames {
     pub event PrizeRemoved(setId: UInt64)
 
     access(self) let prizes : {UInt64 : String}
+
+
+    pub struct GemGameInfo {
+
+        pub let id: UInt64
+        pub let setId: UInt64
+        pub let nftIds: [UInt64]
+        pub let claims: {Address: UInt}
+        pub let prizes: String?
+
+        init(
+            id: UInt64,
+            setId: UInt64,
+            nftIds: [UInt64],
+            claims: {Address: UInt},
+            prizes: String?
+        ) {
+            self.id = id
+            self.setId = setId
+            self.nftIds = nftIds
+            self.claims = claims
+            self.prizes = prizes
+        }
+    }
     
     pub resource GemMinter {
         pub fun createSet() : UInt64 {
@@ -33,6 +57,7 @@ pub contract GemGames {
         pub let setId: UInt64
         
         pub fun claim(address: Address) 
+        pub fun getInfo() : GemGameInfo
     }
 
     pub resource GemGame : IGemGamePublic {
@@ -43,8 +68,6 @@ pub contract GemGames {
         pub let nftIds: [UInt64]
 
         access(self) let claims: {Address: UInt}
-
-        pub var prizes: [String]
 
         // TODO: Add open/closing and limiations around how many you can claim
         // TODO: Add vault password system
@@ -57,11 +80,6 @@ pub contract GemGames {
             self.collection = collection
             self.claims = {}
             self.nftIds = []
-            self.prizes = []
-        }
-
-        pub fun setPrizes(prizes: [String]) {
-            self.prizes = prizes
         }
 
         pub fun deposit(token: @Gem.NFT) {
@@ -100,6 +118,16 @@ pub contract GemGames {
                 }
             }
 
+        }
+
+        pub fun getInfo() : GemGameInfo {
+            return GemGameInfo(
+                id: self.uuid,
+                setId: self.setId,
+                nftIds: self.nftIds,
+                claims: self.claims,
+                prizes: GemGames.getPrizeForSetId(setId: self.setId)
+            )
         }
     }
 

@@ -2,7 +2,7 @@ import path from "path"
 import {
   init,
   emulator,
-  shallPass,
+  executeScript,
   sendTransaction,
   getAccountAddress,
   deployContractByName
@@ -53,11 +53,31 @@ describe("Gem Game Tests", () => {
     [_result, error] = await sendTransaction({ name: "MintGems", args: ["2", ["blue", "blue", "silver"]], signers: [gemGameManager] })
     expect(error).not.toBe(null);
 
+    [_result, error] = await executeScript({name: "GetGemGame", args: [gemGameManager, "1"]});
+    expect(_result.setId).toBe("1")
+    expect(_result.nftIds.length).toBe(5)
+    expect(error).toBe(null);
+
     const gemGameParticipant = await getAccountAddress("GemGameParticipant");
     [_result, error] = await sendTransaction({ name: "ClaimGem", args: [gemGameManager, "1"], signers: [gemGameParticipant] })
     expect(error).toBe(null);
 
+    [_result, error] = await executeScript({name: "GetGemIds", args: [gemGameParticipant]});
+    expect(_result.length).toBe(1);
+    expect(error).toBe(null);
+
+    [_result, error] = await executeScript({name: "GetGem", args: [gemGameParticipant, _result[0]]});
+    expect(_result.display.name).toBe("blue Gem");
+    expect(_result.display.description).toBe("A shiny gem");
+    expect(error).toBe(null);
+
     [_result, error] = await sendTransaction({ name: "AddPrize", args: ["1", "3 Red: Hoodie\n4 Blue: Sticker"], signers: [gemGameManager] })
+    expect(error).toBe(null);
+
+    [_result, error] = await executeScript({name: "GetGemGame", args: [gemGameManager, "1"]});
+    expect(_result.setId).toBe("1")
+    expect(_result.nftIds.length).toBe(4)
+    expect(_result.prizes).toBe("3 Red: Hoodie\n4 Blue: Sticker")
     expect(error).toBe(null);
 
     [_result, error] = await sendTransaction({ name: "RemovePrize", args: ["1"], signers: [gemGameManager] })

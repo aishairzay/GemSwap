@@ -44,13 +44,13 @@ describe("Gem Game Tests", () => {
     [_result, error] = await sendTransaction({ name: "CreateGemSet", signers: [gemGameManager] })
     expect(error).toBe(null);
 
-    [_result, error] = await sendTransaction({ name: "MintGems", args: ["1", ["blue", "red"]], signers: [gemGameManager] })
+    [_result, error] = await sendTransaction({ name: "MintGems", args: ["1", ["Blue", "Red"]], signers: [gemGameManager] })
     expect(error).toBe(null);
 
-    [_result, error] = await sendTransaction({ name: "MintGems", args: ["1", ["blue", "blue", "silver"]], signers: [gemGameManager] })
+    [_result, error] = await sendTransaction({ name: "MintGems", args: ["1", ["Blue", "Blue", "Silver"]], signers: [gemGameManager] })
     expect(error).toBe(null);
 
-    [_result, error] = await sendTransaction({ name: "MintGems", args: ["2", ["blue", "blue", "silver"]], signers: [gemGameManager] })
+    [_result, error] = await sendTransaction({ name: "MintGems", args: ["2", ["Blue", "Blue", "Silver"]], signers: [gemGameManager] })
     expect(error).not.toBe(null);
 
     [_result, error] = await executeScript({name: "GetGemGame", args: [gemGameManager, "1"]});
@@ -67,7 +67,7 @@ describe("Gem Game Tests", () => {
     expect(error).toBe(null);
 
     [_result, error] = await executeScript({name: "GetGem", args: [gemGameParticipant, _result[0]]});
-    expect(_result.display.name).toBe("blue Gem");
+    expect(_result.display.name).toBe("Blue Gem");
     expect(_result.display.description).toBe("A shiny gem");
     expect(error).toBe(null);
 

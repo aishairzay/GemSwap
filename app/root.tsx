@@ -13,7 +13,7 @@ import CreateEvent from "./screens/CreateEvent";
 
 export type RootStackParamList = {
     Home: undefined;
-    Vault: { vaultID: String };
+    Event: { eventID: String };
     CreateVault: undefined;
     ListVaults: undefined;
 };

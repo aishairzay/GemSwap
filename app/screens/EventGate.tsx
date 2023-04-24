@@ -11,12 +11,10 @@ import {
 } from "react-native";
 import { Button } from "react-native-elements";
 import React, { useEffect, useCallback, useLayoutEffect } from "react";
-import LockedContent from "../../components/LockedContent";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { HeaderBackButton } from '@react-navigation/elements';
 import { RootStackParamList } from "../root";
 import { RouteProp } from "@react-navigation/native";
-import UnlockedContent from "../../components/UnlockedContent";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createHash } from "../crypto/utils";
 import { FlowHelper } from "../../flow/FlowHelper";
@@ -205,11 +203,7 @@ export default function EventGate({ route, navigation }: Props) {
     } else if (vault !== null) {
         content = (
             <>
-                {isLocked ? (
-                    <LockedContent vault={vault} submitPassword={setPassword} />
-                ) : (
-                    <UnlockedContent answer={password} vault={vault} />
-                )}
+                Content here
             </>
         );
     }

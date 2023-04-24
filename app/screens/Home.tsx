@@ -97,8 +97,9 @@ export default function Home({ navigation }: Props) {
         run()
     }, [])
 
-    const handleGoToVault = () => {
-        navigation.navigate("Vault", { vaultID: vaultId });
+
+    const handleGoToEvent = (eventID) => {
+        navigation.navigate("EventHome", { eventID: eventID });
     };
 
     const handleGoToCreate = () => {
@@ -160,7 +161,13 @@ export default function Home({ navigation }: Props) {
                     Select an Event:
                 </Text>
                 
-                <Text style={styles.headerText}>FlowCon 2023</Text>
+                <TouchableOpacity
+                    onPress={() => {
+                        handleGoToEvent("FlowCon 2023")
+                    }}
+                >
+                    <Text style={styles.headerText}>FlowCon 2023</Text>
+                </TouchableOpacity>
                 <View style={styles.dividerContainer}>
                     <Text style={styles.dividerText}>OR</Text>
                 </View>

@@ -14,7 +14,7 @@ import { RootStackParamList } from "../root";
 import { RouteProp } from "@react-navigation/native";
 import VaultButton from "../../components/VaultButton";
 import { Button } from "react-native-elements";
-import { getFlowAccount, deleteFlowAccountFromDevice } from '../utils/getFlowAccount';
+import { getFlowAccount } from '../utils/getFlowAccount';
 const lock = require('../../assets/images/lock.png')
 
 const styles = StyleSheet.create({

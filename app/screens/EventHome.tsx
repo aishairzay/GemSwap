@@ -20,6 +20,7 @@ import { FlowHelper } from "../../flow/FlowHelper";
 import { scripts } from '../../flow/CadenceToJson.json';
 import toast from '../utils/toast';
 import NFTCollection from "../../components/NFTCollection";
+import { getFlowAccount } from '../utils/getFlowAccount';
 import { BarCodeScanner } from "expo-barcode-scanner";
 
 const styles = StyleSheet.create({
@@ -106,15 +107,32 @@ type Props = {
 };
 
 export default function EventHome({ route, navigation }: Props) {
+    const [address, setAddress] = React.useState<string>("");
     const [event, setEvent] = React.useState<any | null>(null);
     const [error, setError] = React.useState<string | null>(null);
     const [isScanning, setIsScanning] = React.useState<boolean>(false)
     const eventID = route.params.eventID;
 
+    useEffect(() => {
+        const run = async () => {
+            const acc = await getFlowAccount()
+            setAddress(acc.address)
+        }
+        run()
+    }, [])
+
     const handleBackButtonPress = useCallback(() => {
         // Specify the screen you want to navigate to when the back button is pressed
         navigation.navigate('Home');
     }, [navigation]);
+
+    const onBardcodeScan = (address: string) => {
+        const flowHelper = new FlowHelper(undefined);
+        // TODO Ensure the address is well-formed.
+        
+        // Navigate to a trade between myself and the scanned address.
+        navigation.navigate('Swap', { address: address, eventID: eventID });
+    }
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -130,7 +148,7 @@ export default function EventHome({ route, navigation }: Props) {
     useEffect(() => {
         const getEvent = async () => {
             const flowHelper = new FlowHelper(undefined);
-            
+            // TODO Get the event from the blockchain
         };
         getEvent();
     }, []);
@@ -139,7 +157,7 @@ export default function EventHome({ route, navigation }: Props) {
 
     let content = (
         <View style={{height: 400}}>
-            <NFTCollection address="" />
+            <NFTCollection address={address} />
             <Text style={{...styles.paragraph}}>Event details here.</Text>
         </View>
     );
@@ -150,8 +168,10 @@ export default function EventHome({ route, navigation }: Props) {
                 <View style={{ height: '80%' }}>
                     <BarCodeScanner
                         onBarCodeScanned={(data) => {
-                            console.log('got back result', data)
                             setIsScanning(false)
+                            if (data.data) {
+                                onBardcodeScan(data.data)
+                            }
                         }}
                         style={StyleSheet.absoluteFillObject}
                     />

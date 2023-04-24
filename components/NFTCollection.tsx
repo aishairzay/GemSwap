@@ -13,12 +13,13 @@ const styles = StyleSheet.create({
 
 type VaultButtonProps = {
     address: string,
+    label: string|undefined
 }
 
-export default function NFTCollection({ address }: VaultButtonProps) {
+export default function NFTCollection({ address, label }: VaultButtonProps) {
     return (
       <View>
-        <Text style={styles.paragraph}>My Collection:</Text>
+        <Text style={styles.paragraph}>{label || 'My Collection:'}</Text>
         <Text style={styles.paragraph}>
           {address}
         </Text>

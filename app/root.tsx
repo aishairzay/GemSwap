@@ -10,12 +10,14 @@ import ListVaults from "./screens/ListVaults";
 import EventGate from "./screens/EventGate";
 import EventHome from "./screens/EventHome";
 import CreateEvent from "./screens/CreateEvent";
+import Swap from "./screens/Swap";
 
 export type RootStackParamList = {
     Home: undefined;
-    Event: { eventID: String };
+    Event: { eventID: string };
     CreateVault: undefined;
     ListVaults: undefined;
+    Swap: { eventID: string, address: string }
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -51,6 +53,7 @@ function RootLayoutNav() {
                     <Stack.Screen name="EventGate" component={EventGate} />
                     <Stack.Screen name="EventHome" component={EventHome} />
                     <Stack.Screen name="CreateEvent" component={CreateEvent} />
+                    <Stack.Screen name="Swap" component={Swap} />
                     <Stack.Screen name="ListVaults" component={ListVaults} />
                 </Stack.Navigator>
             </NavigationContainer>

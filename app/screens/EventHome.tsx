@@ -6,9 +6,9 @@ import {
     KeyboardAvoidingView,
     ScrollView,
     Keyboard,
-    StatusBar
+    StatusBar,
+    Button
 } from "react-native";
-import { Button } from "react-native-elements";
 import React, { useEffect, useCallback, useLayoutEffect } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { HeaderBackButton } from '@react-navigation/elements';
@@ -20,6 +20,7 @@ import { FlowHelper } from "../../flow/FlowHelper";
 import { scripts } from '../../flow/CadenceToJson.json';
 import toast from '../utils/toast';
 import NFTCollection from "../../components/NFTCollection";
+import { BarCodeScanner } from "expo-barcode-scanner";
 
 const styles = StyleSheet.create({
     container: {
@@ -107,6 +108,7 @@ type Props = {
 export default function EventHome({ route, navigation }: Props) {
     const [event, setEvent] = React.useState<any | null>(null);
     const [error, setError] = React.useState<string | null>(null);
+    const [isScanning, setIsScanning] = React.useState<boolean>(false)
     const eventID = route.params.eventID;
 
     const handleBackButtonPress = useCallback(() => {
@@ -136,12 +138,33 @@ export default function EventHome({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
 
     let content = (
-        <View>
-            <Button>Start a Trade</Button>
+        <View style={{height: 400}}>
             <NFTCollection address="" />
-            <Text>Event details here.</Text>
+            <Text style={{...styles.paragraph}}>Event details here.</Text>
         </View>
     );
+
+    if (isScanning) {
+        return (
+            <View style={StyleSheet.absoluteFillObject}>
+                <View style={{ height: '80%' }}>
+                    <BarCodeScanner
+                        onBarCodeScanned={(data) => {
+                            console.log('got back result', data)
+                            setIsScanning(false)
+                        }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
+                </View>
+                <View style={{ height: '20%', padding: 10, marginTop: '10%'}}>
+                    <Text style={{ textAlign: 'center' }}>Scan someone else's QR Code to start a trade session</Text>
+                    <Button onPress={() => setIsScanning(false)} title="Cancel" />
+                </View>
+            </View>
+        )
+    }
+
+    
 
     return (
         <>
@@ -151,7 +174,7 @@ export default function EventHome({ route, navigation }: Props) {
                         flex: 1,
                         justifyContent: "center",
                         alignItems: "center",
-                        backgroundColor: "black",
+                        backgroundColor: "black"
                     },
                 ]}
             >
@@ -177,13 +200,11 @@ export default function EventHome({ route, navigation }: Props) {
                         >
                             <View style={styles.centerContainer}>
                                 <Text style={styles.text}>{eventID}</Text>
-                                {error !== null && (
-                                    <Text style={styles.missingText}>MISSING</Text>
-                                )}
                                 {error === null &&
-                                    <Text>QR Code here</Text>
+                                    <Text style={{...styles.paragraph}}>QR Code here</Text>
                                 }
                             </View>
+                            <Button title={"Start a trade session"} onPress={() => setIsScanning(true)}>Start a Trade Session</Button>
                             {content}
                         </KeyboardAvoidingView>
                     </View>

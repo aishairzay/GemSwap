@@ -18,7 +18,7 @@ type VaultButtonProps = {
 export default function NFTCollection({ address }: VaultButtonProps) {
     return (
       <View>
-        <Text>My Collection:</Text>
+        <Text style={styles.paragraph}>My Collection:</Text>
         <Text style={styles.paragraph}>
           {address}
         </Text>

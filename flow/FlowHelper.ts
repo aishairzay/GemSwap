@@ -6,6 +6,7 @@ import { Buffer } from "buffer";
 
 const c2j = require("./CadenceToJson.json");
 const fcl = require("@onflow/fcl");
+const t = require("@onflow/types");
 
 const ec = new EC("secp256k1");
 
@@ -177,9 +178,24 @@ export class FlowHelper {
             this.account?.privateKey
         );
         let payload;
+        let args = transactionArgs(this.fcl.arg, t);
         if (lastTx) {
+            if (transactionCode !== lastTx.cadence) {
+                throw new Error("Mismatch Transaction Code.");
+            }
+            if (
+                !arraysEqual(
+                    args.map((a: any) => {
+                        return { type: a.xform.label, value: a.value };
+                    }),
+                    lastTx.arguments
+                )
+            ) {
+                throw new Error("Mismatch Transaction Arguments.");
+            }
             payload = [
                 this.fcl.transaction(transactionCode),
+                this.fcl.args(args),
                 this.fcl.ref(lastTx.refBlock),
                 this.fcl.limit(999),
                 this.fcl.authorizations([
@@ -202,6 +218,7 @@ export class FlowHelper {
         } else {
             payload = [
                 this.fcl.transaction(transactionCode),
+                this.fcl.args(args),
                 this.fcl.limit(999),
                 this.fcl.authorizations([
                     authorization,
@@ -259,3 +276,11 @@ export class FlowHelper {
         return await fcl.tx(txResult.data.id).onceSealed();
     }
 }
+
+const objectsEqual = (o1: any, o2: any) =>
+    Object.keys(o1).length === Object.keys(o2).length &&
+    Object.keys(o1).every((p) => o1[p] === o2[p]);
+
+const arraysEqual = (a1: any, a2: any) =>
+    a1.length === a2.length &&
+    a1.every((o: any, idx: any) => objectsEqual(o, a2[idx]));

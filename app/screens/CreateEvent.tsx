@@ -9,25 +9,16 @@ import {
     KeyboardAvoidingView,
     ScrollView
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../root";
 import { RouteProp } from "@react-navigation/native";
 import VaultButton from "../../components/VaultButton";
 import { createOrGetFlowAccount } from "../utils/getFlowAccount";
 import { FlowHelper } from "../../flow/FlowHelper";
-import * as Crypto from "expo-crypto";
-import {
-    buf2hex,
-    createHash,
-    deriveKey,
-    symmetricEncryptMessage,
-} from "../crypto/utils";
 import createToast from '../utils/toast'
 import { transactions } from '../../flow/CadenceToJson.json';
 const createVaultGif = require('../../assets/images/create-vault.gif')
-
-import * as secp from "@noble/secp256k1";
 
 const styles = StyleSheet.create({
     container: {
@@ -51,22 +42,6 @@ const styles = StyleSheet.create({
     textInput: {
         color: "black",
     },
-    imageText: {
-        color: "white",
-        fontSize: 12,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginTop: 10,
-        alignSelf: "center",
-    },
-    selectedOption: {
-        borderWidth: 1,
-        borderColor: "white",
-        borderRadius: 4,
-        padding: 4,
-        justifyContent: "center",
-        alignItems: "center",
-    },
     input: {
         backgroundColor: "white",
         borderRadius: 5,
@@ -83,7 +58,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginTop: 32,
         fontSize: 18,
-        fontWeight: 700
+        fontWeight: "700"
     },
     creationStatusText: {
         color: "white",
@@ -93,105 +68,73 @@ const styles = StyleSheet.create({
         fontSize: 32,
         textAlign: "center"
     },
-    square: {
-        backgroundColor: "white",
-        borderRadius: 10,
-        width: 100,
-        height: 100,
-    },
-    disabledOption: {
-        opacity: 0.4,
-        borderRadius: 4,
-        padding: 4,
-    },
-    disabledText: {
-        color: "lightgray",
-    },
 });
 
-type CreateVaultScreenNavigationProp = StackNavigationProp<
+type CreateEventScreenNavigationProp = StackNavigationProp<
     RootStackParamList,
-    "CreateVault"
+    "CreateEvent"
 >;
-type CreateVaultScreenRouteProp = RouteProp<RootStackParamList, "CreateVault">;
+type CreateEventScreenRouteProp = RouteProp<RootStackParamList, "CreateEvent">;
 
 type Props = {
-    navigation: CreateVaultScreenNavigationProp;
-    route: CreateVaultScreenRouteProp;
+    navigation: CreateEventScreenNavigationProp;
+    route: CreateEventScreenRouteProp;
 };
 
 export default function CreateEvent({ navigation }: Props) {
-
-    const [type, setType] = useState("riddle");
     const [input, setInput] = useState({} as any);
     const [creationStatus, setCreationStatus] = useState<string | null>(null);
 
-    const createVault = async () => {
+    const createEvent = async () => {
         try {
-            if (type === "riddle") {
-                if (
-                    !input.riddleAnswer &&
-                    !input.riddleSecret &&
-                    !input.description
-                ) {
-                    Alert.alert(
-                        "Invalid Input",
-                        "Please fill out all of the fields.",
-                        [],
-                        {
-                            cancelable: true,
-                        }
-                    );
-                    return;
-                }
+            if (
+                !input.rewardRedemptionDetails &&
+                !input.eventName
+            ) {
+                Alert.alert(
+                    "Invalid Input",
+                    "Please fill out all of the fields.",
+                    [],
+                    {
+                        cancelable: true,
+                    }
+                );
+                return;
             }
-            setCreationStatus("Welcome, first-time vault master! We're forging your shiny new vault key")
+            setCreationStatus("Creating or getting your Flow account")
             const account = await createOrGetFlowAccount();
             console.log('Retrieved account with address', account.address)
 
-            setCreationStatus('Securing a secret hideout to stash your precious message vault...')
+            setCreationStatus('Creating or getting your gem event manager')
             const flowHelper = new FlowHelper(account);
-            const salt = buf2hex(await Crypto.getRandomBytesAsync(8));
-            const key = `${salt}:${input.riddleAnswer}`;
-            const hashControl = await createHash(key, "SHA256");
-            const encryptedMessage = symmetricEncryptMessage(
-                input.riddleSecret,
-                key,
-                "AES"
+
+            await flowHelper.startTransaction(
+                transactions.SetupGemGameManager,
+                (arg: any, t: any) => []
             );
 
-            // The assymetic key uses a different delimiter (-) so that the
-            // hash that we're putting on-chain is not leaking the
-            // hash needed to generate the assymetric key
-            const asymmetricKey = `${salt}-${input.riddleAnswer}`;
-            const keyPair = await deriveKey(asymmetricKey)
-            const publicKey = keyPair.publicKey
+            setCreationStatus('Creating the event...')
 
-            console.log('Running tx to create vault')
             const response = await flowHelper.startTransaction(
-                transactions.CreateSecretMessageVault,
+                transactions.CreateGemGame,
                 (arg: any, t: any) => [
-                    arg(input.description, t.String),
-                    arg("none", t.String),
-                    arg(salt, t.String),
-                    arg(hashControl, t.String),
-                    arg("SHA256", t.String),
-                    arg(encryptedMessage, t.String),
-                    arg("AES", t.String),
-                    arg(publicKey, t.String),
+                    arg(input.eventName, t.String),
+                    arg(input.rewardRedemptionDetails, t.String),
                 ]
             );
-            const vaultEvent = response.events.find((e: any) =>
-                e.type.includes("VaultCreated")
+
+            const gameCreatedEvent = response.events.find((e: any) =>
+                e.type.includes("GameCreated")
             );
-            navigation.navigate("Vault", { vaultID: vaultEvent.data.id });
+
+            navigation.navigate("EventHome", { eventID: gameCreatedEvent.data.name });
         } catch (e) {
             console.error(e);
             setCreationStatus(null)
-            createToast("We ran into an error creating your vault. Please try again later!")
+            createToast("We ran into an error creating your event. Please try again later!", "warning")
         }
     };
-    
+
 
     if (creationStatus) {
         return (
@@ -209,7 +152,7 @@ export default function CreateEvent({ navigation }: Props) {
                 </View>
                 <Image
                     source={createVaultGif}
-                    style={{ alignSelf: "center", marginTop: 50, width: 300, height: 300}}
+                    style={{ alignSelf: "center", marginTop: 50, width: 300, height: 300 }}
                 />
             </View>
         )
@@ -225,132 +168,43 @@ export default function CreateEvent({ navigation }: Props) {
                     <Text style={styles.text}>X</Text>
                 </TouchableOpacity>
                 <Text style={{ marginRight: 125, paddingBottom: 10, ...styles.text }}>
-                    Create Vault
+                    Gem Swap
                 </Text>
             </View>
-            <ScrollView style={{ keyboardShouldPersistTaps: 'handled' }}>
+            <ScrollView keyboardShouldPersistTaps='handled'>
                 <KeyboardAvoidingView
                     behavior="position"
                     keyboardVerticalOffset={80}
                 >
-                    <Text style={styles.headerText}>How can the vault be opened?</Text>
-                    <View style={{ flexDirection: "row" }}>
-                        <View
-                            style={styles.selectedOption}
-                            onResponderRelease={() => setType("riddle")}
-                        >
-                            <Image source={require("../../assets/images/riddle.png")} />
-                            <Text style={styles.imageText}>Solve a Riddle</Text>
-                        </View>
-                        <TouchableOpacity style={styles.disabledOption} onPress={() => {
-                            createToast("This feature is not yet available.")
-                        }}>
-                            <Image source={require("../../assets/images/play.png")} />
-                            <Text style={[styles.imageText, styles.disabledText]}>
-                                Play a game
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    {type === "riddle" && (
-                        <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter the riddle description/hint"
-                                placeholderTextColor="#4d4d4d"
-                                onChangeText={(text) => {
-                                    setInput({
-                                        ...input,
-                                        description: text,
-                                    });
-                                }}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter the riddle answer"
-                                placeholderTextColor="#4d4d4d"
-                                onChangeText={(text) => {
-                                    setInput({
-                                        ...input,
-                                        riddleAnswer: text,
-                                    });
-                                }}
-                            />
-                            <Text style={styles.headerText}>What's in the vault?</Text>
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "flex-start",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <View
-                                    style={{
-                                        marginRight: 10,
-                                        ...styles.selectedOption,
-                                    }}
-                                >
-                                    <Image
-                                        source={require("../../assets/images/secretmessage.png")}
-                                        style={{ width: 100, height: 100 }}
-                                    />
-                                    <Text style={styles.imageText}>
-                                        A Secret Message
-                                    </Text>
-                                </View>
-                                <TouchableOpacity
-                                    style={{
-                                        marginRight: 10,
-                                        ...styles.disabledOption,
-                                    }}
-                                    onPress={() => {
-                                        createToast("This feature is not yet available.")
-                                    }}
-                                >
-                                    <Image
-                                        source={require("../../assets/images/kitty.png")}
-                                        style={{ width: 100, height: 100 }}
-                                    />
-                                    <Text
-                                        style={[styles.imageText, styles.disabledText]}
-                                    >
-                                        An NFT
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={{
-                                        marginRight: 10,
-                                        ...styles.disabledOption,
-                                    }}
-                                    onPress={() => {
-                                        createToast("This feature is not yet available.")
-                                    }}
-                                >
-                                    <Image
-                                        source={require("../../assets/images/flow.png")}
-                                        style={{ width: 100, height: 100 }}
-                                    />
-                                    <Text
-                                        style={[styles.imageText, styles.disabledText]}
-                                    >
-                                        Custom on- {"\n"}
-                                        chain Action
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter the secret message"
-                                placeholderTextColor="#4d4d4d"
-                                onChangeText={(text) => {
-                                    setInput({
-                                        ...input,
-                                        riddleSecret: text,
-                                    });
-                                }}
-                            />
-                        </>
-                    )}
-                    <VaultButton onPress={createVault} text="Create Vault" />
+                    <Text style={styles.headerText}>Event Name</Text>
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter the event's name"
+                            placeholderTextColor="#4d4d4d"
+                            onChangeText={(text) => {
+                                setInput({
+                                    ...input,
+                                    eventName: text,
+                                });
+                            }}
+                        />
+                        <Text style={styles.headerText}>Reward Redemption Details</Text>
+                        <TextInput
+                            style={[styles.input, { height: 100 }]}
+                            placeholder=""
+                            placeholderTextColor="#4d4d4d"
+                            onChangeText={(text) => {
+                                setInput({
+                                    ...input,
+                                    rewardRedemptionDetails: text,
+                                });
+                            }}
+                            multiline
+                            numberOfLines={4}
+                        />
+                    </>
+                    <VaultButton onPress={createEvent} text="Create Event" />
                 </KeyboardAvoidingView>
             </ScrollView>
         </View>

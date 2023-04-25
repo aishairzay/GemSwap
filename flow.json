@@ -15,6 +15,13 @@
 				"testnet": "631e88ae7f1d7c20"
 			}
 		},
+		"ViewResolver": {
+			"source": "cadence/contracts/ViewResolver.cdc",
+			"aliases": {
+				"mainnet": "1d7e57aa55817448",
+				"testnet": "631e88ae7f1d7c20"
+			}
+		},
 		"NonFungibleToken": {
 			"source": "cadence/contracts/NonFungibleToken.cdc",
 			"aliases": {
@@ -22,9 +29,8 @@
 				"testnet": "631e88ae7f1d7c20"
 			}
 		},
-		"SomeStandardVaultActions": "cadence/contracts/SomeStandardVaultActions.cdc",
-		"VaultExecutionSignatures": "cadence/contracts/VaultExecutionSignatures.cdc",
-		"VaultService": "cadence/contracts/VaultService.cdc"
+		"Gem": "cadence/contracts/Gem.cdc",
+		"GemGames": "cadence/contracts/GemGames.cdc"
 	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
@@ -42,7 +48,7 @@
 			"key": "aca7bcca2c7925e5aae15cc5d05eafe6f9cee203568b1dbec8bb3352b0445743"
 		},
 		"testnet-account": {
-			"address": "bbbeb7f62d6d47dd",
+			"address": "3ccf563958bc0008",
 			"key": {
 				"type": "file",
 				"location": "testnet-account.pkey"
@@ -60,15 +66,13 @@
 		"emulator": {
 			"default": [
 				"MetadataViews",
-				"NonFungibleToken",
-				"SomeStandardVaultActions",
-				"VaultExecutionSignatures",
-				"VaultService"
+				"NonFungibleToken"
 			]
 		},
 		"testnet": {
 			"testnet-account": [
-				"VaultService"
+				"Gem",
+				"GemGames"
 			]
 		}
 	}

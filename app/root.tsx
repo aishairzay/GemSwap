@@ -14,8 +14,8 @@ import Swap from "./screens/Swap";
 
 export type RootStackParamList = {
     Home: undefined;
-    Event: { eventID: string };
-    CreateVault: undefined;
+    EventHome: { eventID: string };
+    CreateEvent: undefined;
     ListVaults: undefined;
     Swap: { eventID: string, address: string }
 };

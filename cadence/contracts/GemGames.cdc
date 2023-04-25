@@ -3,25 +3,22 @@ import MetadataViews from "./MetadataViews.cdc"
 import Gem from "./Gem.cdc"
 
 pub contract GemGames {
-    pub let GemMinterStoragePath : StoragePath
-    pub let GemMinterPrivatePath : PrivatePath
-
     pub let GemGameManagerPublicPath: PublicPath
     pub let GemGameManagerStoragePath: StoragePath
     pub let GemGameManagerPrivatePath: PrivatePath
 
-    pub event GameCreated(uuid: UInt64, setId: UInt64)
+    pub event GameCreated(id: UInt64, setId: UInt64, name: String, prizes: String)
     pub event GemClaimed(gameUuid: UInt64, setId: UInt64, nftId: UInt64, claimerAddress: Address)
-    pub event PrizeAdded(setId: UInt64, prize: String)
-    pub event PrizeRemoved(setId: UInt64)
 
-    access(self) let prizes : {UInt64 : String}
-
+    access(self) let gamesById: {UInt64: GemGameInfo}
+    access(self) let gamesBySetId: {UInt64: GemGameInfo}
+    access(self) let gamesByName: {String: GemGameInfo}
 
     pub struct GemGameInfo {
 
         pub let id: UInt64
         pub let setId: UInt64
+        pub let name: String
         pub let nftIds: [UInt64]
         pub let claims: {Address: UInt}
         pub let prizes: String?
@@ -29,43 +26,39 @@ pub contract GemGames {
         init(
             id: UInt64,
             setId: UInt64,
+            name: String,
             nftIds: [UInt64],
             claims: {Address: UInt},
             prizes: String?
         ) {
             self.id = id
             self.setId = setId
+            self.name = name
             self.nftIds = nftIds
             self.claims = claims
             self.prizes = prizes
         }
     }
-    
-    pub resource GemMinter {
-        pub fun createSet() : UInt64 {
-            return Gem.createSet()
-        }
-
-        pub fun mintNFT(color: String, setId: UInt64): @Gem.NFT {
-            return <- Gem.mintNFT(color: color, setId: setId)
-        }
-       
-       init () {}
-    }
 
     pub resource interface IGemGamePublic {
         pub let setId: UInt64
+        pub let name: String
+        pub let prizes: String
         
         pub fun claim(address: Address) 
         pub fun getInfo() : GemGameInfo
     }
 
-    pub resource GemGame : IGemGamePublic {
+    pub resource GemGame : IGemGamePublic {   
         pub let setId: UInt64
 
-        access(self) let collection: Capability<&Gem.Collection>
+        pub let name: String
+
+        pub let prizes: String
 
         pub let nftIds: [UInt64]
+
+        access(self) let collection: Capability<&Gem.Collection>
 
         access(self) let claims: {Address: UInt}
 
@@ -74,9 +67,13 @@ pub contract GemGames {
 
         init(
             setId: UInt64,
+            name: String,
+            prizes: String,
             collection: Capability<&Gem.Collection>,
         ) {
             self.setId = setId
+            self.name = name
+            self.prizes = prizes
             self.collection = collection
             self.claims = {}
             self.nftIds = []
@@ -124,86 +121,58 @@ pub contract GemGames {
             return GemGameInfo(
                 id: self.uuid,
                 setId: self.setId,
+                name: self.name,
                 nftIds: self.nftIds,
                 claims: self.claims,
-                prizes: GemGames.getPrizeForSetId(setId: self.setId)
+                prizes: self.prizes
             )
         }
     }
 
     pub resource interface IGameManagerPublic {
-        pub fun addMinterCapability(capability : Capability<&GemMinter>)
-        pub fun hasMinterCapability() : Bool
         pub fun borrowGame(setId: UInt64): &GemGame{IGemGamePublic}?
     }
 
     pub resource GemGameManager : IGameManagerPublic {
-        access(self) var minterCapability : Capability<&GemMinter>?
         access(self) let games : @{UInt64: GemGame}
         access(self) let createdSets : {UInt64 :  Bool}
 
-        pub fun addMinterCapability(capability : Capability<&GemMinter>) {
-            pre {
-                capability.check() : "Invalid GemMinter Capability"
-                self.minterCapability == nil : "GemMinter already set"
-            }
-            self.minterCapability = capability
-        }
-
-        pub fun addPrize(setId: UInt64, prize: String) {
-            pre {
-                self.createdSets.containsKey(setId) : "Need to be creator of set"
-                self.games.containsKey(setId) : "Need to create game"
-            }
-
-            GemGames.prizes[setId] = prize
-
-            emit PrizeAdded(setId: setId, prize: prize)
-        }
-
-        pub fun removePrize(setId: UInt64) {
-            pre {
-                self.createdSets.containsKey(setId) : "Need to be creator of set"
-                self.games.containsKey(setId) : "Need to create game"
-            }
-
-            GemGames.prizes.remove(key: setId)
-
-            emit PrizeRemoved(setId: setId)
-
-        }
-
         pub fun mintNFT(setId: UInt64, color: String) {
             pre {
-                self.hasMinterCapability() != nil : "GemMinter not set"
                 self.createdSets.containsKey(setId) : "Need to be creator of set"
                 self.games.containsKey(setId) : "Need to create game"
             }
-            let token <- self.minterCapability!.borrow()!.mintNFT(color: color, setId: setId)
+            let token <- Gem.mintNFT(color: color, setId: setId)
             let gameRef = (&self.games[setId] as &GemGames.GemGame?)!
             gameRef.deposit(token: <-token)
         }
 
         pub fun createSet() : UInt64 {
-            pre {
-                self.hasMinterCapability() != nil : "GemMinter not set"
-            }
-            let setId = self.minterCapability!.borrow()!.createSet()
+            let setId = Gem.createSet()
             self.createdSets.insert(key: setId, true)
             return setId
         }
 
-        pub fun createGame(setId: UInt64, setCollection: Capability<&Gem.Collection>) {
+        pub fun createGame(setId: UInt64, name: String, prizes: String, setCollection: Capability<&Gem.Collection>) {
             pre {
                 self.createdSets.containsKey(setId) : "Need to be creator of set"
+                GemGames.gamesBySetId[setId] == nil : "Set id already used"
+                GemGames.gamesByName[name] == nil : "Name already taken"
             }
 
             let game <- create GemGame(
                 setId: setId,
+                name: name,
+                prizes: prizes,
                 collection: setCollection
             )
 
-            emit GameCreated(uuid: game.uuid, setId: setId)
+            // Update Cache
+            GemGames.gamesById[game.uuid] = game.getInfo()
+            GemGames.gamesBySetId[setId] = game.getInfo()
+            GemGames.gamesByName[name] = game.getInfo()
+
+            emit GameCreated(id: game.uuid, setId: setId, name: name, prizes: prizes)
 
             let oldGame <- self.games[setId] <- game
 
@@ -214,12 +183,7 @@ pub contract GemGames {
              return &self.games[setId] as &GemGame{IGemGamePublic}?
         }   
 
-        pub fun hasMinterCapability() : Bool {
-            return self.minterCapability != nil
-        }
-
         init() {
-            self.minterCapability = nil
             self.games <- {}
             self.createdSets = {}
         }
@@ -249,28 +213,39 @@ pub contract GemGames {
         return PublicPath(identifier: self.makeGameCollectionName(setId: setId))!
     }
 
-    pub fun getPrizeSetIds() : [UInt64] {
-        return self.prizes.keys
+    pub fun getGamesIds() : [UInt64] {
+        return self.gamesById.keys
     }
 
-    pub fun getPrizeForSetId(setId : UInt64) : String? {
-        return self.prizes[setId]
+    pub fun getGameForId(id : UInt64) : GemGameInfo? {
+        return self.gamesById[id]
+    }
+
+    pub fun getGameSetIds() : [UInt64] {
+        return self.gamesBySetId.keys
+    }
+
+    pub fun getGameForSetId(setId : UInt64) : GemGameInfo? {
+        return self.gamesBySetId[setId]
+    }
+
+    pub fun getGameNames() : [String] {
+        return self.gamesByName.keys
+    }
+
+    pub fun getGameForName(name : String) : GemGameInfo? {
+        return self.gamesByName[name]
     }
 
     init () {
-        self.GemMinterStoragePath = /storage/gemMinter
-        self.GemMinterPrivatePath = /private/gemMinter
 
         self.GemGameManagerPublicPath = /public/gemGameManager
         self.GemGameManagerStoragePath = /storage/gemGameManager
         self.GemGameManagerPrivatePath = /private/gemGameManager
 
-        let minter <- create GemMinter()
-
-        self.account.save(<- minter, to: self.GemMinterStoragePath)
-        self.account.link<&GemMinter>(self.GemMinterPrivatePath, target: self.GemMinterStoragePath)
-
-        self.prizes = {}
+        self.gamesById = {}
+        self.gamesBySetId = {}
+        self.gamesByName = {}
     }
 
 }

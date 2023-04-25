@@ -38,10 +38,7 @@ describe("Gem Game Tests", () => {
     [_result, error] = await sendTransaction({ name: "SetupGemGameManager", signers: [gemGameManager] })
     expect(error).toBe(null);
 
-    [_result, error] = await sendTransaction({ name: "SendGemMinterToManager", args: [gemGameManager], signers: [admin] })
-    expect(error).toBe(null);
-
-    [_result, error] = await sendTransaction({ name: "CreateGemSet", signers: [gemGameManager] })
+    [_result, error] = await sendTransaction({ name: "CreateGemGame", args: ["Test Event", "3 Red: Hoodie\n4 Blue: Sticker"], signers: [gemGameManager] })
     expect(error).toBe(null);
 
     [_result, error] = await sendTransaction({ name: "MintGems", args: ["1", ["Blue", "Red"]], signers: [gemGameManager] })
@@ -53,8 +50,10 @@ describe("Gem Game Tests", () => {
     [_result, error] = await sendTransaction({ name: "MintGems", args: ["2", ["Blue", "Blue", "Silver"]], signers: [gemGameManager] })
     expect(error).not.toBe(null);
 
-    [_result, error] = await executeScript({name: "GetGemGame", args: [gemGameManager, "1"]});
+    [_result, error] = await executeScript({name: "GetGemGameFromAddress", args: [gemGameManager, "1"]});
+    expect(_result.name).toBe("Test Event");
     expect(_result.setId).toBe("1")
+    expect(_result.prizes).toBe("3 Red: Hoodie\n4 Blue: Sticker")
     expect(_result.nftIds.length).toBe(5)
     expect(error).toBe(null);
 
@@ -70,19 +69,6 @@ describe("Gem Game Tests", () => {
     expect(_result.display.name).toBe("Blue Gem");
     expect(_result.display.description).toBe("A shiny gem");
     expect(error).toBe(null);
-
-    [_result, error] = await sendTransaction({ name: "AddPrize", args: ["1", "3 Red: Hoodie\n4 Blue: Sticker"], signers: [gemGameManager] })
-    expect(error).toBe(null);
-
-    [_result, error] = await executeScript({name: "GetGemGame", args: [gemGameManager, "1"]});
-    expect(_result.setId).toBe("1")
-    expect(_result.nftIds.length).toBe(4)
-    expect(_result.prizes).toBe("3 Red: Hoodie\n4 Blue: Sticker")
-    expect(error).toBe(null);
-
-    [_result, error] = await sendTransaction({ name: "RemovePrize", args: ["1"], signers: [gemGameManager] })
-    expect(error).toBe(null);
-
 
   })
 })

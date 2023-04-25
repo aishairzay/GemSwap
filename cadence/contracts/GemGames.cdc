@@ -7,35 +7,28 @@ pub contract GemGames {
     pub let GemGameManagerStoragePath: StoragePath
     pub let GemGameManagerPrivatePath: PrivatePath
 
-    pub event GameCreated(id: UInt64, setId: UInt64, name: String, prizes: String)
+    pub event GameCreated(uuid: UInt64, setId: UInt64, name: String, prizes: String)
     pub event GemClaimed(gameUuid: UInt64, setId: UInt64, nftId: UInt64, claimerAddress: Address)
 
-    access(self) let gamesById: {UInt64: GemGameInfo}
+    access(self) let gamesByUuid: {UInt64: GemGameInfo}
     access(self) let gamesBySetId: {UInt64: GemGameInfo}
     access(self) let gamesByName: {String: GemGameInfo}
 
     pub struct GemGameInfo {
-
-        pub let id: UInt64
+        pub let uuid: UInt64
         pub let setId: UInt64
         pub let name: String
-        pub let nftIds: [UInt64]
-        pub let claims: {Address: UInt}
-        pub let prizes: String?
+        pub let prizes: String
 
         init(
-            id: UInt64,
+            uuid: UInt64,
             setId: UInt64,
             name: String,
-            nftIds: [UInt64],
-            claims: {Address: UInt},
-            prizes: String?
+            prizes: String
         ) {
-            self.id = id
+            self.uuid = uuid
             self.setId = setId
             self.name = name
-            self.nftIds = nftIds
-            self.claims = claims
             self.prizes = prizes
         }
     }
@@ -119,11 +112,9 @@ pub contract GemGames {
 
         pub fun getInfo() : GemGameInfo {
             return GemGameInfo(
-                id: self.uuid,
+                uuid: self.uuid,
                 setId: self.setId,
                 name: self.name,
-                nftIds: self.nftIds,
-                claims: self.claims,
                 prizes: self.prizes
             )
         }
@@ -168,11 +159,11 @@ pub contract GemGames {
             )
 
             // Update Cache
-            GemGames.gamesById[game.uuid] = game.getInfo()
+            GemGames.gamesByUuid[game.uuid] = game.getInfo()
             GemGames.gamesBySetId[setId] = game.getInfo()
             GemGames.gamesByName[name] = game.getInfo()
 
-            emit GameCreated(id: game.uuid, setId: setId, name: name, prizes: prizes)
+            emit GameCreated(uuid: game.uuid, setId: setId, name: name, prizes: prizes)
 
             let oldGame <- self.games[setId] <- game
 
@@ -213,12 +204,12 @@ pub contract GemGames {
         return PublicPath(identifier: self.makeGameCollectionName(setId: setId))!
     }
 
-    pub fun getGamesIds() : [UInt64] {
-        return self.gamesById.keys
+    pub fun getGameUuids() : [UInt64] {
+        return self.gamesByUuid.keys
     }
 
-    pub fun getGameForId(id : UInt64) : GemGameInfo? {
-        return self.gamesById[id]
+    pub fun getGameForUuid(uuid : UInt64) : GemGameInfo? {
+        return self.gamesByUuid[uuid]
     }
 
     pub fun getGameSetIds() : [UInt64] {
@@ -243,7 +234,7 @@ pub contract GemGames {
         self.GemGameManagerStoragePath = /storage/gemGameManager
         self.GemGameManagerPrivatePath = /private/gemGameManager
 
-        self.gamesById = {}
+        self.gamesByUuid = {}
         self.gamesBySetId = {}
         self.gamesByName = {}
     }

@@ -50,11 +50,10 @@ describe("Gem Game Tests", () => {
     [_result, error] = await sendTransaction({ name: "MintGems", args: ["2", ["Blue", "Blue", "Silver"]], signers: [gemGameManager] })
     expect(error).not.toBe(null);
 
-    [_result, error] = await executeScript({name: "GetGemGameFromAddress", args: [gemGameManager, "1"]});
+    [_result, error] = await executeScript({name: "GetGemGameForSetId", args: ["1"]});
     expect(_result.name).toBe("Test Event");
     expect(_result.setId).toBe("1")
     expect(_result.prizes).toBe("3 Red: Hoodie\n4 Blue: Sticker")
-    expect(_result.nftIds.length).toBe(5)
     expect(error).toBe(null);
 
     const gemGameParticipant = await getAccountAddress("GemGameParticipant");

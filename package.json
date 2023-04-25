@@ -12,10 +12,7 @@
     "test-flow": "jest flow",
     "test-cadence": "jest cadence",
     "build-cadence": "node cadence/build.js",
-    "postinstall": "patch-package"
-  },
-  "jest": {
-    "preset": "jest-expo"
+    "prestart": "patch-package"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",

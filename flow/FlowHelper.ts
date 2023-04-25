@@ -46,6 +46,55 @@ const authorizationFunction = (
     };
 };
 
+/*
+    Workaround to pull in the payload sig from the previous transaction
+*/
+const payloadProvidedAuthorizationFunction = (
+    accountAddress: any,
+    keyId: any,
+    providedSig: string
+) => {
+    return async (account: any = {}) => {
+        return {
+            ...account,
+            tempId: `${accountAddress}-${keyId}`,
+            addr: fcl.sansPrefix(accountAddress),
+            keyId: keyId,
+            signingFunction: (signable: any) => {
+                return {
+                    addr: fcl.withPrefix(accountAddress),
+                    keyId: keyId,
+                    signature: providedSig,
+                };
+            },
+        };
+    };
+};
+
+/*
+    Workaround to not needing the envelope key private key for the proposer of a multisig transaction.
+*/
+const envelopeBlankAuthorizationFunction = (
+    accountAddress: any,
+    keyId: any
+) => {
+    return async (account: any = {}) => {
+        return {
+            ...account,
+            tempId: `${accountAddress}-${keyId}`,
+            addr: fcl.sansPrefix(accountAddress),
+            keyId: keyId,
+            signingFunction: (signable: any) => {
+                return {
+                    addr: fcl.withPrefix(accountAddress),
+                    keyId: keyId,
+                    signature: "",
+                };
+            },
+        };
+    };
+};
+
 export class FlowHelper {
     fcl: any;
     account: Account | undefined;
@@ -110,10 +159,14 @@ export class FlowHelper {
         return await this.fcl.tx(response).onceSealed();
     }
 
+    /*
+        Currently only supports 2 signers, but shouldnt be too bad to add more.
+    */
     async multiSigSignTransaction(
         lastTx: any,
         transactionCode: string,
         transactionArgs: any = (arg: any, t: any) => [],
+        signers: string[],
         shouldSend: boolean = true
     ): Promise<any> {
         // Will always use the first key for now
@@ -124,37 +177,45 @@ export class FlowHelper {
             this.account?.privateKey
         );
         let payload;
-        let account1 = await this.fcl.account("d96401bb22d88f81");
-        let account2 = await this.fcl.account("d35471304961eb69");
-        console.log(account1);
-        console.log(account2);
         if (lastTx) {
             payload = [
                 this.fcl.transaction(transactionCode),
                 this.fcl.ref(lastTx.refBlock),
                 this.fcl.limit(999),
-                this.fcl.authorizations([account1, authorization]),
-                this.fcl.proposer(account1),
-                this.fcl.payer(account1),
+                this.fcl.authorizations([
+                    payloadProvidedAuthorizationFunction(
+                        signers[0],
+                        0,
+                        lastTx.payloadSigs[0].sig
+                    ),
+                    authorization,
+                ]),
+                this.fcl.proposer(
+                    payloadProvidedAuthorizationFunction(
+                        signers[0],
+                        0,
+                        lastTx.payloadSigs[0].sig
+                    )
+                ),
+                this.fcl.payer(authorization),
             ];
         } else {
             payload = [
                 this.fcl.transaction(transactionCode),
                 this.fcl.limit(999),
-                this.fcl.authorizations([authorization, account2]),
+                this.fcl.authorizations([
+                    authorization,
+                    envelopeBlankAuthorizationFunction(signers[1], 0),
+                ]),
                 this.fcl.proposer(authorization),
-                this.fcl.payer(authorization),
+                this.fcl.payer(
+                    envelopeBlankAuthorizationFunction(signers[1], 0)
+                ),
             ];
         }
-        console.log("sdfsdfs");
         const voucher = await this.fcl.serialize(payload);
         let nextTx = JSON.parse(voucher);
-        console.log(nextTx);
         if (shouldSend) {
-            nextTx.payloadSigs = lastTx.envelopeSigs;
-            nextTx.authorizers = lastTx.authorizers.concat(nextTx.authorizers);
-            nextTx.proposalKey = lastTx.proposalKey;
-            console.log(nextTx);
             return await this.sendRawTransaction(nextTx);
         } else {
             return nextTx;
@@ -191,7 +252,6 @@ export class FlowHelper {
                 };
             }),
         };
-        console.log(body);
         const txResult = await axios.post(
             `${await this.fcl.config().get("accessNode.api")}/v1/transactions`,
             body

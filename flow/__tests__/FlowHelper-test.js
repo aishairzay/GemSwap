@@ -38,6 +38,7 @@ test(`can multisig tx`, async () => {
         undefined,
         tx,
         [],
+        [process.env.FLOW_ADDRESS, process.env.FLOW_MULTI_SIG_ADDRESS],
         false
     );
     const flowHelper2 = new FlowHelper({
@@ -49,6 +50,7 @@ test(`can multisig tx`, async () => {
         firstTx,
         tx,
         [],
+        [process.env.FLOW_ADDRESS, process.env.FLOW_MULTI_SIG_ADDRESS],
         true
     );
     console.log(result);

@@ -11,6 +11,7 @@ import EventGate from "./screens/EventGate";
 import EventHome from "./screens/EventHome";
 import CreateEvent from "./screens/CreateEvent";
 import Swap from "./screens/Swap";
+import CollectionViewer from "./screens/CollectionViewer";
 
 export type RootStackParamList = {
     Home: undefined;
@@ -54,7 +55,7 @@ function RootLayoutNav() {
                     <Stack.Screen name="EventHome" component={EventHome} />
                     <Stack.Screen name="CreateEvent" component={CreateEvent} />
                     <Stack.Screen name="Swap" component={Swap} />
-                    <Stack.Screen name="ListVaults" component={ListVaults} />
+                    <Stack.Screen name="CollectionViewer" component={CollectionViewer} />
                 </Stack.Navigator>
             </NavigationContainer>
         </SafeAreaProvider>

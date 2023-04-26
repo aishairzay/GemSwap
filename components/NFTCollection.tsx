@@ -1,28 +1,44 @@
-import { View, Text, StyleSheet } from 'react-native';
-import React from 'react';
-
-const styles = StyleSheet.create({
-    paragraph: {
-        color: 'white',
-        fontSize: 16,
-        marginTop: 32,
-        textAlign: "center",
-        marginHorizontal: 32
-    }
-});
+import { View, Text, StyleSheet, Button } from 'react-native';
+import React, { useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { FlowHelper } from '../flow/FlowHelper';
+import { scripts } from '../flow/CadenceToJson.json';
+import { styles } from '../app/utils/styles';
 
 type VaultButtonProps = {
     address: string,
-    label: string|undefined
+    label: string|undefined,
+    selectable: boolean
 }
 
-export default function NFTCollection({ address, label }: VaultButtonProps) {
+export default function NFTCollection({ address, label, selectable }: VaultButtonProps) {
+    const [nftCount, setNFTCount] = React.useState<number|null>(null)
+
+    useEffect(() => {
+        const flowHelper = new FlowHelper(undefined)
+        flowHelper.runScript(scripts.GetGemIds,
+          (arg: any, t: any) => {
+            return [arg(address, t.Address)]
+          }
+        ).then((result) => {
+            setNFTCount(result.length)
+        })
+    })
+
+    const navigation = useNavigation();
     return (
-      <View>
-        <Text style={styles.paragraph}>{label || 'My Collection:'}</Text>
-        <Text style={styles.paragraph}>
-          {address}
-        </Text>
+      <View style={ styles.centerContainer }>
+        <Text 
+          style={{ ...styles.text, ...styles.smallText, ...styles.clickable }}
+          onPress={() => {
+            navigation.navigate('CollectionViewer', {
+              address: address,
+              onBack: (gems) => {
+                console.log('selectedGems is', gems)
+              }
+            })
+          }}
+        >{label || 'My Gem Collection'}</Text>
       </View>
     )
 }

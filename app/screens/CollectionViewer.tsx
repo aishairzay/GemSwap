@@ -52,46 +52,39 @@ const styles = StyleSheet.create({
     },
 });
 
-type ListVaultsScreenNavigationProp = StackNavigationProp<
-    RootStackParamList,
-    "ListVaults"
->;
-type ListVaultsScreenRouteProp = RouteProp<RootStackParamList, "ListVaults">;
-
 type Props = {
-    navigation: ListVaultsScreenNavigationProp;
-    route: ListVaultsScreenRouteProp;
+    navigation: any;
+    route: any;
 };
 
-export default function ListVaults({ navigation }: Props) {
-    const [vaults, setVaults] = React.useState<any[] | null>([]);
+export default function CollectionViewer({ navigation, route }: Props) {
+    const [gems, setGems] = React.useState<any[] | null>([]);
     const [error, setError] = React.useState<string | null>(null);
 
-    const handleGoToVault = (vaultId: string) => {
-        navigation.navigate("Vault", { vaultID: vaultId });
-    };
+    const address = route.params.address
+    const onBack = route.params.onBack
 
     useEffect(() => {
-        const listVaults = async () => {
+        const listGems = async () => {
             const account = await getFlowAccount();
             const flowHelper = new FlowHelper(undefined);
-            let vaults = null;
+            let gems = null;
             try {
-                vaults = await flowHelper.runScript(
-                    scripts.GetVaults,
+              gems = await flowHelper.runScript(
+                    scripts.GetGemIds,
                     (arg: any, t: any) => [arg(account.address, t.Address)]
                 );
             } catch (e) {
-                console.log("Failed to list vaults: ", e);
-                setError(`We could not list vaults for this account.`);
+                console.log("Failed to list gems: ", e);
+                setError(`We could not list gems for this account.`);
             }
-            setVaults(
-                vaults.map((v: any) => {
+            setGems(
+                gems.map((v: any) => {
                     return { key: v.id, description: v.description };
                 })
             );
         };
-        listVaults();
+        listGems();
     }, []);
 
     const insets = useSafeAreaInsets();
@@ -105,15 +98,14 @@ export default function ListVaults({ navigation }: Props) {
                 {error}
             </Text>
         );
-    } else if (vaults !== null) {
+    } else if (gems !== null) {
         content = (
             <FlatList
                 style={{ paddingTop: 20, width: '100%' }}
-                data={vaults}
+                data={gems}
                 renderItem={({ item }) => (
                     <Text
                         style={styles.buttonText}
-                        onPress={() => handleGoToVault(item.key)}
                     >
                         {item.key} - {item.description}
                     </Text>
@@ -139,8 +131,10 @@ export default function ListVaults({ navigation }: Props) {
         >
             <View style={styles.grayBackground} />
             <View style={styles.centerContainer}>
-                <Text style={styles.text}>Your Vaults</Text>
+                <Text style={styles.text}>Gems</Text>
+                <Text style={styles.text}>({address})</Text>
             </View>
+            {onBack && ( <Text style={styles.text}>Select</Text> )}
             {content}
         </View>
     );

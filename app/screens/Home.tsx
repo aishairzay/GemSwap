@@ -1,78 +1,20 @@
 import {
     View,
     Text,
-    StyleSheet,
     TouchableOpacity,
-    TextInput,
     Image,
-    KeyboardAvoidingView,
     ScrollView
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../root";
 import { RouteProp } from "@react-navigation/native";
-import VaultButton from "../../components/VaultButton";
-import { Button } from "react-native-elements";
 import { getFlowAccount } from '../utils/getFlowAccount';
-const lock = require('../../assets/images/lock.png')
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingLeft: 16,
-        paddingRight: 16,
-        backgroundColor: "black",
-        alignItems: "center", // Add alignItems center
-    },
-    centerContainer: {
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 32,
-    },
-    text: {
-        color: "white",
-        fontSize: 24,
-        fontWeight: "bold",
-        marginTop: 36,
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginHorizontal: 5,
-        marginBottom: 20,
-    },
-    input: {
-        flex: 1,
-        height: 40,
-        backgroundColor: "white",
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        color: "black",
-    },
-    dividerContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 40,
-        marginBottom: 40,
-    },
-    dividerText: {
-        color: "black",
-        fontWeight: "900",
-        textShadowColor: "white",
-        textShadowRadius: 5,
-        fontSize: 32,
-        borderWidth: 1,
-    },
-    headerText: {
-        color: "#5db075",
-        fontWeight: "bold",
-        fontSize: 24,
-        paddingHorizontal: 5,
-        textDecorationLine: "underline",
-    },
-});
+import { styles } from '../utils/styles'
+import { FlowHelper } from "../../flow/FlowHelper";
+import { scripts } from '../../flow/CadenceToJson.json';
+import { LinearGradient } from 'expo-linear-gradient';
+const redGem = require('../../assets/images/red-gem.png')
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 type HomeScreenRouteProp = RouteProp<RootStackParamList, "Home">;
@@ -83,7 +25,6 @@ type Props = {
 };
 
 export default function Home({ navigation }: Props) {
-    const [vaultId, setVaultId] = useState("");
     const [shouldShowProfileIcon, setShouldShowProfileIcon] = useState(null)
 
     useEffect(() => {
@@ -113,70 +54,48 @@ export default function Home({ navigation }: Props) {
     useEffect(() => {
         const run = async () => {
             const acc = await getFlowAccount()
-            const shouldShow = !(!acc)
-            setShouldShowProfileIcon(!(!acc))
+            const flowHelper = new FlowHelper(undefined);
+            const events = await flowHelper.runScript(
+                scripts.GetGameGameSetIds,
+                (arg: any, t: any) => []
+            )
+            console.log('events is', events)
         }
         run()
     }, [])
 
     return (
-        <View style={{ ...styles.container }}>
-            <View style={styles.centerContainer}>
-                <Text style={styles.text}>Gem Swap</Text>
-            </View>
-            {
-                shouldShowProfileIcon && (
-                    <View
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            right: 0,
-                            marginTop: 60,
-                            marginRight: 15,
-                        }}
-                    >
-                        <Button
-                            type="clear"
-                            icon={{
-                                name: "person",
-                                size: 25,
-                                color: "white",
-                            }}
-                            onPress={handleGoToList}
-                        />
+        <View>
+            <LinearGradient
+                style={{
+
+                }}
+                colors={['#000000', '#FF0000', '#000']}
+                start={{ x: 1, y: 1 }}
+                end={{ x: 0, y: 0 }}
+            >
+                <View style={{  }}>
+
+                    <View style={styles.centerContainer}>
+                        <Text style={{ ...styles.text, ...styles.whiteText }}>Gem Swap</Text>
                     </View>
-                )
-            }
-            <ScrollView style={{ keyboardShouldPersistTaps: 'handled' }}>
-                <Text
-                    style={{
-                        color: "white",
-                        marginHorizontal: 5,
-                        marginBottom: 5,
-                        marginTop: 48,
-                        alignSelf: "flex-start",
-                        fontSize: 16,
-                    }}
-                >
-                    Select an Event:
-                </Text>
-                
-                <TouchableOpacity
-                    onPress={() => {
-                        handleGoToEvent("FlowCon 2023")
-                    }}
-                >
-                    <Text style={styles.headerText}>FlowCon 2023</Text>
-                </TouchableOpacity>
-                <View style={styles.dividerContainer}>
-                    <Text style={styles.dividerText}>OR</Text>
+                    <ScrollView style={{ keyboardShouldPersistTaps: 'handled' }}>
+                        <Image
+                            source={redGem}
+                            style={{ alignSelf: "center", marginTop: 30, maxWidth: '80%', maxHeight: '50%' }}
+                        />
+                        <TouchableOpacity
+                            onPress={() => {
+                                handleGoToEvent("FlowCon 2023")
+                            }}
+                        >
+                            <Text style={{ ...styles.headerText, ...styles.whiteText, marginLeft: 20 }}>Enter FlowCon 2023</Text>
+                        </TouchableOpacity>
+                        <View style={{ marginTop: '40%' }}></View>
+                        <Text onPress={handleGoToCreate} style={{ ...styles.smallText, ...styles.clickable, ...styles.whiteText, marginLeft: 20 }}>Create a new Event</Text>
+                    </ScrollView>
                 </View>
-                <Image
-                    source={lock}
-                    style={{ alignSelf: "center", marginTop: 30 }}
-                />
-                <VaultButton onPress={handleGoToCreate} text="Create a new Event" />
-            </ScrollView>
+            </LinearGradient>
         </View>
     );
 }

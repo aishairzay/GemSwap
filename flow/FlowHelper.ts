@@ -201,7 +201,7 @@ export class FlowHelper {
                 this.fcl.authorizations([
                     payloadProvidedAuthorizationFunction(
                         signers[0],
-                        0,
+                        keyId,
                         lastTx.payloadSigs[0].sig
                     ),
                     authorization,
@@ -209,7 +209,7 @@ export class FlowHelper {
                 this.fcl.proposer(
                     payloadProvidedAuthorizationFunction(
                         signers[0],
-                        0,
+                        keyId,
                         lastTx.payloadSigs[0].sig
                     )
                 ),
@@ -222,11 +222,11 @@ export class FlowHelper {
                 this.fcl.limit(999),
                 this.fcl.authorizations([
                     authorization,
-                    envelopeBlankAuthorizationFunction(signers[1], 0),
+                    envelopeBlankAuthorizationFunction(signers[1], keyId),
                 ]),
                 this.fcl.proposer(authorization),
                 this.fcl.payer(
-                    envelopeBlankAuthorizationFunction(signers[1], 0)
+                    envelopeBlankAuthorizationFunction(signers[1], keyId)
                 ),
             ];
         }

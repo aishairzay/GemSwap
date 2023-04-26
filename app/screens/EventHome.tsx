@@ -120,10 +120,10 @@ export default function EventHome({ route, navigation }: Props) {
                         paddingLeft: insets.left,
                         paddingRight: insets.right,
                     }}>
-                        <NFTCollection label={"View your Gem Collection"} address={address} selectable={false} eventID={eventID} />
                         <View style={{
-                            paddingLeft: 10,
+                            paddingLeft: 20,
                         }}>
+                            <NFTCollection label={"View your Gem Collection"} address={address} selectable={false} eventID={eventID} />
                             <Text style={{ ...styles.text }}>Event details</Text>
                             <Text style={{ ...styles.text, ...styles.smallText, ...styles.lightText, marginTop: 0 }}>
                                 {

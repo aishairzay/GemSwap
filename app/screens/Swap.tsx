@@ -1,13 +1,8 @@
 import {
   View,
-  Text,
   StyleSheet,
-  Image,
-  KeyboardAvoidingView,
   ScrollView,
-  Keyboard,
   StatusBar,
-  Button
 } from "react-native";
 import React, { useEffect, useCallback, useLayoutEffect } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";

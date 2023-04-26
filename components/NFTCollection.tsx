@@ -2,8 +2,9 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { FlowHelper } from '../flow/FlowHelper';
-import { scripts } from '../flow/CadenceToJson.json';
+import { scripts, transactions } from '../flow/CadenceToJson.json';
 import { styles } from '../app/utils/styles';
+import { getFlowAccount } from '../app/utils/getFlowAccount';
 
 type VaultButtonProps = {
     address: string,
@@ -23,19 +24,17 @@ export default function NFTCollection({ address, label, selectable }: VaultButto
         ).then((result) => {
             setNFTCount(result.length)
         })
-    })
+    }, [])
 
     const navigation = useNavigation();
     return (
-      <View style={ styles.centerContainer }>
+      <View>
         <Text 
           style={{ ...styles.text, ...styles.smallText, ...styles.clickable }}
           onPress={() => {
             navigation.navigate('CollectionViewer', {
               address: address,
-              onBack: (gems) => {
-                console.log('selectedGems is', gems)
-              }
+              onBack: null
             })
           }}
         >{label || 'My Gem Collection'}</Text>

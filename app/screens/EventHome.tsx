@@ -33,7 +33,7 @@ export default function EventHome({ route, navigation }: Props) {
         run()
     }, [])
 
-    const onBardcodeScan = async (scannedText: string) => {
+    const onBarCodeScan = async (scannedText: string) => {
         // 0xb76fb8c4a2248a7e
         if (scannedText.startsWith('https://')) {
             const multisigJson = await axios.get(scannedText)
@@ -54,7 +54,7 @@ export default function EventHome({ route, navigation }: Props) {
                         onBarCodeScanned={(data) => {
                             setIsScanning(false)
                             if (data.data) {
-                                onBardcodeScan(data.data)
+                                onBarCodeScan(data.data)
                             }
                         }}
                         style={StyleSheet.absoluteFillObject}
@@ -96,7 +96,10 @@ export default function EventHome({ route, navigation }: Props) {
                             ...styles.whiteText,
                             ...styles.centerText,
                             ...styles.clickable
-                        }} onPress={() => setIsScanning(true)}>Open QR Code Scanner</Text>
+                        }} onPress={async () =>{
+                            await BarCodeScanner.requestPermissionsAsync();
+                            setIsScanning(true)
+                        }}>Open QR Code Scanner</Text>
                     </View>
                     <View style={{
                         paddingBottom: insets.bottom,

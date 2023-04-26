@@ -129,7 +129,6 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                             false // TODO: Should be true
                         )
                         console.log('multiSigTx', JSON.stringify(multiSigTx))
-
                     }}
                   >
                     Confirm Trade

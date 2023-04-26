@@ -120,7 +120,7 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                         const flowHelper = new FlowHelper(curAccount);
                         const multiSigTx = await flowHelper.multiSigSignTransaction(
                             multisigJson,
-                            transactions.SwapGemsTest,
+                            transactions.SwapGems,
                             (arg: any, t: any) => [
                                 arg(offeredGems, t.Array(t.UInt64)),
                                 arg(requestedGems, t.Array(t.UInt64))

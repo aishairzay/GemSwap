@@ -13,6 +13,7 @@ import { getFlowAccount } from '../utils/getFlowAccount';
 import { BarCodeScanner } from "expo-barcode-scanner";
 import { styles } from '../utils/styles'
 import QRCode from 'react-native-qrcode-svg';
+var LZUTF8 = require('lzutf8');
 import axios from "axios";
 
 type Props = {
@@ -34,10 +35,15 @@ export default function EventHome({ route, navigation }: Props) {
     }, [])
 
     const onBarCodeScan = async (scannedText: string) => {
-        // 0xb76fb8c4a2248a7e
-        if (scannedText.startsWith('https://')) {
-            const multisigJson = await axios.get(scannedText)
-            navigation.navigate('ConfirmSwap', { multisigJson: multisigJson.data.record });
+        console.log('scanned is', scannedText)
+        if (scannedText.length > 20) {
+            // This is a multisig qr code, compressed and base64 encoded.
+            const output = LZUTF8.decompress(scannedText, { inputEncoding: "Base64" })
+            console.log('output is', output)
+            const multisigJson = JSON.parse(output)
+            //const multisigJson = await axios.get(scannedText)
+            console.log('json is', multisigJson)
+            navigation.navigate('ConfirmSwap', { multisigJson: multisigJson });
         } else {
             // Navigate to a trade between myself and the scanned address.
             navigation.navigate('Swap', { address: scannedText, eventID: eventID });

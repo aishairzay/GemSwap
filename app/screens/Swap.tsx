@@ -114,7 +114,7 @@ export default function Swap({ route, navigation }: Props) {
                         const flowHelper = new FlowHelper(curAccount);
                         const multiSigTx = await flowHelper.multiSigSignTransaction(
                             undefined,
-                            transactions.SwapGems,
+                            transactions.SwapGemsTest,
                             (arg: any, t: any) => [
                                 arg(offeredGems, t.Array(t.UInt64)),
                                 arg(requestedGems, t.Array(t.UInt64))

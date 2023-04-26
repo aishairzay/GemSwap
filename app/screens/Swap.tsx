@@ -10,9 +10,9 @@ import { FlowHelper } from "../../flow/FlowHelper";
 import NFTCollection from "../../components/NFTCollection";
 import { getFlowAccount } from '../utils/getFlowAccount';
 import { styles } from '../utils/styles'
-import { transactions } from '../../flow/CadenceToJson.json';
 import QRCode from 'react-native-qrcode-svg';
 import axios from "axios";
+import { transformSwapTx } from '../utils/transformFlowTx';
 
 type Props = {
     navigation: any;
@@ -114,11 +114,8 @@ export default function Swap({ route, navigation }: Props) {
                         const flowHelper = new FlowHelper(curAccount);
                         const multiSigTx = await flowHelper.multiSigSignTransaction(
                             undefined,
-                            transactions.SwapGems,
-                            (arg: any, t: any) => [
-                                arg(offeredGems, t.Array(t.UInt64)),
-                                arg(requestedGems, t.Array(t.UInt64))
-                            ],
+                            transformSwapTx(offeredGems, requestedGems),
+                            (arg: any, t: any) => [],
                             [address, otherAddress],
                             false
                         )

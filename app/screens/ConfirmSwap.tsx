@@ -11,8 +11,7 @@ import NFTCollection from "../../components/NFTCollection";
 import { getFlowAccount } from '../utils/getFlowAccount';
 import { styles } from '../utils/styles'
 import { transactions } from '../../flow/CadenceToJson.json';
-import QRCode from 'react-native-qrcode-svg';
-import axios from "axios";
+import { transformSwapTx } from '../utils/transformFlowTx';
 
 type Props = {
     navigation: any;
@@ -25,14 +24,10 @@ export default function ConfirmSwap({ route, navigation }: Props) {
   const [address, setAddress] = React.useState<string>("");
 
   const [offeredGems, setOfferedGems] = React.useState<any[]>(
-    multisigJson.arguments[0].value.map((a: any) => {
-      return a.value
-    })
+    multisigJson.cadence.split('let offeredIds = [')[1].split(']')[0].split(',').map((s: string) => s.trim())
   );
   const [requestedGems, setRequestedGems] = React.useState<any[]>(
-    multisigJson.arguments[1].value.map((a: any) => {
-      return a.value
-    })
+    multisigJson.cadence.split('let requestedIds = [')[1].split(']')[0].split(',').map((s: string) => s.trim())
   );
 
   const offererAddress = multisigJson.authorizers[0]
@@ -120,13 +115,10 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                         const flowHelper = new FlowHelper(curAccount);
                         const multiSigTx = await flowHelper.multiSigSignTransaction(
                             multisigJson,
-                            transactions.SwapGems,
-                            (arg: any, t: any) => [
-                                arg(offeredGems, t.Array(t.UInt64)),
-                                arg(requestedGems, t.Array(t.UInt64))
-                            ],
+                            transformSwapTx(offeredGems, requestedGems),
+                            (arg: any, t: any) => [],
                             [offererAddress, requestedAddress],
-                            false // TODO: Should be true
+                            true
                         )
                         console.log('multiSigTx', JSON.stringify(multiSigTx))
                     }}

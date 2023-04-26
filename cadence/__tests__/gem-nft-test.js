@@ -67,6 +67,7 @@ describe("Gem Game Tests", () => {
     [_result, error] = await executeScript({name: "GetGem", args: [gemGameParticipant, _result[0]]});
     expect(_result.display.name).toBe("Blue Gem");
     expect(_result.display.description).toBe("A shiny gem");
+    expect(_result.setId).toBe("1");
     expect(error).toBe(null);
 
   })

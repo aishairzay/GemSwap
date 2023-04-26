@@ -127,6 +127,20 @@ export default function CreateEvent({ navigation }: Props) {
                 e.type.includes("GameCreated")
             );
 
+            setCreationStatus('Creating some gems...')
+
+            const colors = ["Ruby", "Emerald", "Pearl", "Sapphire", "Gold", "Silver", "Diamond"];
+            const size = 20;
+            const randomArray = generateRandomArray(size, colors);
+
+            await flowHelper.startTransaction(
+                transactions.MintGems,
+                (arg: any, t: any) => [
+                    arg(gameCreatedEvent.data.setId, t.UInt64),
+                    arg(randomArray, t.Array(t.String)),
+                ]
+            );
+
             navigation.navigate("EventHome", { eventID: gameCreatedEvent.data.name });
         } catch (e) {
             console.error(e);
@@ -210,3 +224,33 @@ export default function CreateEvent({ navigation }: Props) {
         </View>
     );
 }
+
+
+
+function getRandomColor(colors : string[]) {
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+  function generateRandomArray(size: number, colors : string[]) {
+    const colorCount = colors.length;
+    if (size < colorCount) {
+      throw new Error('The size of the array must be greater or equal to the number of colors');
+    }
+  
+    // Initialize the array with at least one of each color
+    const result = colors.slice(0, size);
+    
+    // Fill the rest of the array with random colors
+    for (let i = colorCount; i < size; i++) {
+      result[i] = getRandomColor(colors);
+    }
+  
+    // Shuffle the array using Fisher-Yates shuffle algorithm
+    for (let i = size - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+  
+    return result;
+  }
+  

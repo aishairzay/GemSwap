@@ -19,17 +19,20 @@ pub contract GemGames {
         pub let setId: UInt64
         pub let name: String
         pub let prizes: String
+        pub let creatorAddress: Address
 
         init(
             uuid: UInt64,
             setId: UInt64,
             name: String,
-            prizes: String
+            prizes: String,
+            creatorAddress: Address
         ) {
             self.uuid = uuid
             self.setId = setId
             self.name = name
             self.prizes = prizes
+            self.creatorAddress = creatorAddress
         }
     }
 
@@ -51,6 +54,8 @@ pub contract GemGames {
 
         pub let nftIds: [UInt64]
 
+        pub let creatorAddress: Address
+
         access(self) let collection: Capability<&Gem.Collection>
 
         access(self) let claims: {Address: UInt}
@@ -62,11 +67,13 @@ pub contract GemGames {
             setId: UInt64,
             name: String,
             prizes: String,
+            creatorAddress: Address,
             collection: Capability<&Gem.Collection>,
         ) {
             self.setId = setId
             self.name = name
             self.prizes = prizes
+            self.creatorAddress = creatorAddress
             self.collection = collection
             self.claims = {}
             self.nftIds = []
@@ -115,7 +122,8 @@ pub contract GemGames {
                 uuid: self.uuid,
                 setId: self.setId,
                 name: self.name,
-                prizes: self.prizes
+                prizes: self.prizes,
+                creatorAddress: self.creatorAddress
             )
         }
     }
@@ -155,7 +163,8 @@ pub contract GemGames {
                 setId: setId,
                 name: name,
                 prizes: prizes,
-                collection: setCollection
+                creatorAddress: self.owner!.address,
+                collection: setCollection,
             )
 
             // Update Cache

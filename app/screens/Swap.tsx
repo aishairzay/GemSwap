@@ -124,7 +124,6 @@ export default function EventHome({ route, navigation }: Props) {
       run()
   }, [])
 
-
   useLayoutEffect(() => {
       navigation.setOptions({
           headerLeft: () => (
@@ -145,13 +144,6 @@ export default function EventHome({ route, navigation }: Props) {
   }, []);
 
   const insets = useSafeAreaInsets();
-
-  let content = (
-      <View style={{height: 400}}>
-          <NFTCollection address="" />
-          <Text style={{...styles.paragraph}}>Event details here</Text>
-      </View>
-  );
 
   if (isScanning) {
       return (
@@ -189,8 +181,8 @@ export default function EventHome({ route, navigation }: Props) {
                       paddingLeft: insets.left,
                       paddingRight: insets.right,
                   }}>
-                        <NFTCollection label={undefined} address={address}></NFTCollection>
-                        <NFTCollection label="Their Collection" address={otherAddress}></NFTCollection>
+                        <NFTCollection label="My Collection" address={address} selectable={true}></NFTCollection>
+                        <NFTCollection label="Their Collection" address={otherAddress} selectable={true}></NFTCollection>
                   </View>
               </ScrollView>
           </View>

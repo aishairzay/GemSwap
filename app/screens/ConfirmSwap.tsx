@@ -122,8 +122,8 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                             multisigJson,
                             transactions.SwapGemsTest,
                             (arg: any, t: any) => [
-                                //arg(offeredGems, t.Array(t.UInt64)),
-                                //arg(requestedGems, t.Array(t.UInt64))
+                                arg(offeredGems, t.Array(t.UInt64)),
+                                arg(requestedGems, t.Array(t.UInt64))
                             ],
                             [offererAddress, requestedAddress],
                             false // TODO: Should be true

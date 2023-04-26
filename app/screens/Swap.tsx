@@ -116,8 +116,8 @@ export default function Swap({ route, navigation }: Props) {
                             undefined,
                             transactions.SwapGemsTest,
                             (arg: any, t: any) => [
-                                //arg(offeredGems, t.Array(t.UInt64)),
-                                //arg(requestedGems, t.Array(t.UInt64))
+                                arg(offeredGems, t.Array(t.UInt64)),
+                                arg(requestedGems, t.Array(t.UInt64))
                             ],
                             [address, otherAddress],
                             false

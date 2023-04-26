@@ -180,19 +180,6 @@ export class FlowHelper {
         let payload;
         let args = transactionArgs(this.fcl.arg, t);
         if (lastTx) {
-            if (transactionCode !== lastTx.cadence) {
-                throw new Error("Mismatch Transaction Code.");
-            }
-            if (
-                !arraysEqual(
-                    args.map((a: any) => {
-                        return { type: a.xform.label, value: a.value };
-                    }),
-                    lastTx.arguments
-                )
-            ) {
-                throw new Error("Mismatch Transaction Arguments.");
-            }
             payload = [
                 this.fcl.transaction(transactionCode),
                 this.fcl.args(args),

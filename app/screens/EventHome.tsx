@@ -3,27 +3,17 @@ import {
     Text,
     StyleSheet,
     Image,
-    KeyboardAvoidingView,
     ScrollView,
-    Keyboard,
-    StatusBar,
     Button
 } from "react-native";
 import React, { useEffect, useCallback, useLayoutEffect } from "react";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { HeaderBackButton } from '@react-navigation/elements';
-import { RootStackParamList } from "../root";
-import { RouteProp } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createHash } from "../crypto/utils";
-import { FlowHelper } from "../../flow/FlowHelper";
-import { scripts } from '../../flow/CadenceToJson.json';
-import toast from '../utils/toast';
 import NFTCollection from "../../components/NFTCollection";
 import { getFlowAccount } from '../utils/getFlowAccount';
 import { BarCodeScanner } from "expo-barcode-scanner";
 import { styles } from '../utils/styles'
 import QRCode from 'react-native-qrcode-svg';
+import axios from "axios";
 
 type Props = {
     navigation: any;
@@ -32,8 +22,6 @@ type Props = {
 
 export default function EventHome({ route, navigation }: Props) {
     const [address, setAddress] = React.useState<string>("");
-    const [event, setEvent] = React.useState<any | null>(null);
-    const [error, setError] = React.useState<string | null>(null);
     const [isScanning, setIsScanning] = React.useState<boolean>(false)
     const eventID = route.params.eventID;
 
@@ -45,21 +33,16 @@ export default function EventHome({ route, navigation }: Props) {
         run()
     }, [])
 
-    const onBardcodeScan = (address: string) => {
-        const flowHelper = new FlowHelper(undefined);
-        // TODO Ensure the address is well-formed.
-        
-        // Navigate to a trade between myself and the scanned address.
-        navigation.navigate('Swap', { address: address, eventID: eventID });
+    const onBardcodeScan = async (scannedText: string) => {
+        // 0xb76fb8c4a2248a7e
+        if (scannedText.startsWith('https://')) {
+            const multisigJson = await axios.get(scannedText)
+            navigation.navigate('ConfirmSwap', { multisigJson: multisigJson.data.record });
+        } else {
+            // Navigate to a trade between myself and the scanned address.
+            navigation.navigate('Swap', { address: scannedText, eventID: eventID });
+        }
     }
-
-    useEffect(() => {
-        const getEvent = async () => {
-            const flowHelper = new FlowHelper(undefined);
-            // TODO Get the event from the blockchain
-        };
-        getEvent();
-    }, []);
 
     const insets = useSafeAreaInsets();
 
@@ -123,7 +106,7 @@ export default function EventHome({ route, navigation }: Props) {
                         <View style={{
                             paddingLeft: 20,
                         }}>
-                            <NFTCollection label={"View your Gem Collection"} address={address} selectable={false} eventID={eventID} />
+                            <NFTCollection label={"View your Gem Collection"} address={address} onBack={null} eventID={eventID} />
                             <Text style={{ ...styles.text }}>Event details</Text>
                             <Text style={{ ...styles.text, ...styles.smallText, ...styles.lightText, marginTop: 0 }}>
                                 {

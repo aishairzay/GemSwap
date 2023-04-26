@@ -19,14 +19,24 @@ type Props = {
     route: any;
 };
 
-export default function Swap({ route, navigation }: Props) {
-  const [address, setAddress] = React.useState<string>("");
-  const [offeredGems, setOfferedGems] = React.useState<any[]>([]);
-  const [requestedGems, setRequestedGems] = React.useState<any[]>([]);
-  const [qrCodeData, setQRCodeData] = React.useState<string>("");
+export default function ConfirmSwap({ route, navigation }: Props) {
+  const multisigJson = route.params.multisigJson
 
-  const otherAddress = route.params.address
-  const eventID = route.params.eventID;
+  const [address, setAddress] = React.useState<string>("");
+
+  const [offeredGems, setOfferedGems] = React.useState<any[]>(
+    multisigJson.arguments[0].value.map((a: any) => {
+      return a.value
+    })
+  );
+  const [requestedGems, setRequestedGems] = React.useState<any[]>(
+    multisigJson.arguments[1].value.map((a: any) => {
+      return a.value
+    })
+  );
+
+  const offererAddress = multisigJson.authorizers[0]
+  const requestedAddress = multisigJson.authorizers[1]
 
   const handleBackButtonPress = useCallback(() => {
       // Specify the screen you want to navigate to when the back button is pressed
@@ -86,18 +96,14 @@ export default function Swap({ route, navigation }: Props) {
                       paddingLeft: insets.left,
                       paddingRight: insets.right,
                   }}>
-                        <NFTCollection label="My Collection" address={address} onBack={(selectedGems: [number]) => {
-                            setOfferedGems(selectedGems)
-                        }} />
-                        <Text>Offered:</Text>
+                        <NFTCollection label="Their Collection" address={offererAddress} />
+                        <Text>What they give:</Text>
                         <Text>
                             {JSON.stringify(offeredGems)}
                         </Text>
 
-                        <NFTCollection label="Their Collection" address={otherAddress} onBack={(selectedGems: [number]) => {
-                            setRequestedGems(selectedGems)
-                        }} />
-                        <Text>Requested:</Text>
+                        <NFTCollection label="My Collection" address={requestedAddress} />
+                        <Text>What they take:</Text>
                         <Text>
                             {JSON.stringify(requestedGems)}
                         </Text>
@@ -109,54 +115,25 @@ export default function Swap({ route, navigation }: Props) {
                         ...styles.largeText
                     }}
                     onPress={async () => {
-                        // Build first half of multisig trade
+                        // Build second half of multisig trade
                         const curAccount = await getFlowAccount();
                         const flowHelper = new FlowHelper(curAccount);
                         const multiSigTx = await flowHelper.multiSigSignTransaction(
-                            undefined,
+                            multisigJson,
                             transactions.SwapGems,
                             (arg: any, t: any) => [
                                 arg(offeredGems, t.Array(t.UInt64)),
                                 arg(requestedGems, t.Array(t.UInt64))
                             ],
-                            [address, otherAddress],
-                            false
+                            [offererAddress, requestedAddress],
+                            false // TODO: Should be true
                         )
                         console.log('multiSigTx', JSON.stringify(multiSigTx))
 
-                        const headers = {
-                            'Content-Type': 'application/json',
-                            'X-Master-key': '$2b$10$eO7hvOmrgihsZ5416p0xmey6M4lh0dx7gFnGDMfG7tRrnQu8V4ZPm',
-                            'X-Bin-private': "false"
-                          }
-                        const response = await axios.post('https://api.jsonbin.io/v3/b', JSON.stringify(multiSigTx), {
-                            headers: headers
-                        })
-                        console.log('response is', response.data.metadata.id)
-                        const id = response.data.metadata.id
-                        console.log(`MultiSig available at https://api.jsonbin.io/v3/b/${id}`)
-                        setQRCodeData(`https://api.jsonbin.io/v3/b/${id}`)
                     }}
                   >
-                    Propose Trade
+                    Confirm Trade
                   </Text>
-
-                  {
-                    qrCodeData.length > 0 && (
-                        <>
-                            <Text style={{ ...styles.text, color: 'green' }}>Trade Proposed!</Text>
-                            <View style={{marginTop: 20}}></View>
-                            <QRCode
-                                value={qrCodeData}
-                                size={200}
-                            />
-                            <Text>{`
-Have your trade partner scan this
-QR Code to confirm your trade!
-                            `}</Text>
-                        </>
-                    )
-                  }
               </ScrollView>
           </View>
       </>

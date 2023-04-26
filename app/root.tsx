@@ -6,19 +6,19 @@ import Vault from "./screens/EventHome";
 import CreateVault from "./screens/CreateEvent";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { RootSiblingParent } from "react-native-root-siblings";
-import ListVaults from "./screens/ListVaults";
 import EventGate from "./screens/EventGate";
 import EventHome from "./screens/EventHome";
 import CreateEvent from "./screens/CreateEvent";
 import Swap from "./screens/Swap";
+import ConfirmSwap from "./screens/ConfirmSwap";
 import CollectionViewer from "./screens/CollectionViewer";
 
 export type RootStackParamList = {
     Home: undefined;
     EventHome: { eventID: string };
     CreateEvent: undefined;
-    ListVaults: undefined;
-    Swap: { eventID: string, address: string }
+    Swap: { eventID: string, address: string },
+    ConfirmSwap: { multisigJson: any },
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -55,6 +55,7 @@ function RootLayoutNav() {
                     <Stack.Screen name="EventHome" component={EventHome} />
                     <Stack.Screen name="CreateEvent" component={CreateEvent} />
                     <Stack.Screen name="Swap" component={Swap} />
+                    <Stack.Screen name="ConfirmSwap" component={ConfirmSwap} />
                     <Stack.Screen name="CollectionViewer" component={CollectionViewer} />
                 </Stack.Navigator>
             </NavigationContainer>

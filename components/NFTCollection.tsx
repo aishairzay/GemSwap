@@ -4,28 +4,14 @@ import { useNavigation } from '@react-navigation/native';
 import { FlowHelper } from '../flow/FlowHelper';
 import { scripts, transactions } from '../flow/CadenceToJson.json';
 import { styles } from '../app/utils/styles';
-import { getFlowAccount } from '../app/utils/getFlowAccount';
 
-type VaultButtonProps = {
+type NFTCollectionProps = {
     address: string,
     label: string|undefined,
-    selectable: boolean
+    onBack: (selectedGems: [number]) => void|null
 }
 
-export default function NFTCollection({ address, label, selectable }: VaultButtonProps) {
-    const [nftCount, setNFTCount] = React.useState<number|null>(null)
-
-    useEffect(() => {
-        const flowHelper = new FlowHelper(undefined)
-        flowHelper.runScript(scripts.GetGemIds,
-          (arg: any, t: any) => {
-            return [arg(address, t.Address)]
-          }
-        ).then((result) => {
-            setNFTCount(result.length)
-        })
-    }, [])
-
+export default function NFTCollection({ address, label, onBack }: NFTCollectionProps) {
     const navigation = useNavigation();
     return (
       <View>
@@ -34,7 +20,7 @@ export default function NFTCollection({ address, label, selectable }: VaultButto
           onPress={() => {
             navigation.navigate('CollectionViewer', {
               address: address,
-              onBack: null
+              onBack: onBack
             })
           }}
         >{label || 'My Gem Collection'}</Text>

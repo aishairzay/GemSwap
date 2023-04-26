@@ -55,11 +55,6 @@ export default function Home({ navigation }: Props) {
         const run = async () => {
             const acc = await getFlowAccount()
             const flowHelper = new FlowHelper(undefined);
-            const events = await flowHelper.runScript(
-                scripts.GetGameGameSetIds,
-                (arg: any, t: any) => []
-            )
-            console.log('events is', events)
         }
         run()
     }, [])

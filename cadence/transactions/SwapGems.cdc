@@ -16,7 +16,7 @@ pub fun initializeCollection(account: AuthAccount) {
     }
 }
 
-transaction() {
+transaction(offeredIds: [UInt64], requestedIds: [UInt64]) {
 
     let offerer: &Gem.Collection
     let requester: &Gem.Collection
@@ -29,8 +29,8 @@ transaction() {
     }
 
     execute {
-        let offeredIds = [/*INSERT_OFFERED_IDS*/]
-        let requestedIds = [/*INSERT_REQUESTED_IDS*/]
+        let offererIds = self.offerer.getIDs()
+        let requesterIds = self.requester.getIDs()
 
         for id in offeredIds {
             let withdrawn = self.offerer.withdraw(withdrawID: id)

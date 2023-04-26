@@ -29,23 +29,14 @@ transaction(offeredIds: [UInt64], requestedIds: [UInt64]) {
     }
 
     execute {
-        let offererIds = self.offerer.getIDs()
-        let requesterIds = self.requester.getIDs()
-
         for id in offeredIds {
-            let withdrawn = self.offerer.withdraw(withdrawID: id)
-            if !withdrawn {
-                panic("Offerer does not own token with ID: \(id)")
-            }
-            requester.deposit(token: <-withdrawn)
+            let withdrawn <- self.offerer.withdraw(withdrawID: id)
+            self.requester.deposit(token: <-withdrawn)
         }
 
         for id in requestedIds {
-            let withdrawn = self.requester.withdraw(withdrawID: id)
-            if !withdrawn {
-                panic("Requester does not own token with ID: \(id)")
-            }
-            offerer.deposit(token: <-withdrawn)
+            let withdrawn <- self.requester.withdraw(withdrawID: id)
+            self.offerer.deposit(token: <-withdrawn)
         }
         
     }

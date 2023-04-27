@@ -87,18 +87,18 @@ export default function Swap({ route, navigation }: Props) {
                       paddingLeft: insets.left,
                       paddingRight: insets.right,
                   }}>
-                        <NFTCollection label="My Collection" address={address} onBack={(selectedGems: [number]) => {
+                        <NFTCollection label="Select Gems to Offer" address={address} onBack={(selectedGems: [number]) => {
                             setOfferedGems(selectedGems)
                         }} />
-                        <Text>Offered:</Text>
+                        <Text>Offered Gems:</Text>
                         <Text>
                             {JSON.stringify(offeredGems)}
                         </Text>
 
-                        <NFTCollection label="Their Collection" address={otherAddress} onBack={(selectedGems: [number]) => {
+                        <NFTCollection label={`Select Gems to Receive`} address={otherAddress} onBack={(selectedGems: [number]) => {
                             setRequestedGems(selectedGems)
                         }} />
-                        <Text>Requested:</Text>
+                        <Text>Requested Gems:</Text>
                         <Text>
                             {JSON.stringify(requestedGems)}
                         </Text>

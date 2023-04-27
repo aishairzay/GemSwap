@@ -2,11 +2,10 @@ import {
     View,
     Text,
     StyleSheet,
-    Image,
     ScrollView,
     Button
 } from "react-native";
-import React, { useEffect, useCallback, useLayoutEffect } from "react";
+import React, { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import NFTCollection from "../../components/NFTCollection";
 import { getFlowAccount } from '../utils/getFlowAccount';
@@ -14,7 +13,6 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import { styles } from '../utils/styles'
 import QRCode from 'react-native-qrcode-svg';
 var LZUTF8 = require('lzutf8');
-import axios from "axios";
 
 type Props = {
     navigation: any;
@@ -121,9 +119,9 @@ export default function EventHome({ route, navigation }: Props) {
                                 {
                                     `
 Prizes:
-2 Golden Gems - A flow hoodie
-5 Blue Gems - A flow beanie
-10 Red Gems - Flovatar NFT
+2 Diamond Gems - A flow hoodie
+5 Gold Gems - A flow beanie
+10 Sapphire Gems - Flovatar NFT
 
 Head to the flow booth to redeem prizes!
                                     `

@@ -16,6 +16,7 @@ export default function CollectionViewer({ navigation, route }: Props) {
     const [error, setError] = React.useState<string | null>(null);
     const [refreshCount, setRefreshCount] = React.useState<number>(0)
     const [selected, setSelected] = React.useState<number[]>([])
+    const [isMyAddress, setIsMyAddress] = React.useState<boolean>(false)
 
     const address = route.params.address
     const onBack = route.params.onBack
@@ -35,12 +36,20 @@ export default function CollectionViewer({ navigation, route }: Props) {
             }
             setGems(
                 gems.map((v: any) => {
-                    return { key: v.id, description: v.display.description };
+                    return { key: v.id, description: v.display.name };
                 })
             );
         };
         listGems();
     }, [refreshCount]);
+
+    useEffect(() => {
+        const checkAddress = async () => {
+            const curAccount = await getFlowAccount()
+            setIsMyAddress(curAccount.address === address)
+        }
+        checkAddress()
+    }, [])
 
 
     let content = <Text style={styles.paragraph}>Loading...</Text>;
@@ -82,8 +91,8 @@ export default function CollectionViewer({ navigation, route }: Props) {
         <>
             <View style={styles.centerContainer}>
                 <Text style={styles.text}>{`
-Gems for
-${address}
+Gems owned by
+${address} ${isMyAddress ? '(YOU)' : ''}
                 `}</Text>
             </View>
 
@@ -112,12 +121,21 @@ ${address}
                         </Text>
                     )
                 }
-                {onBack && ( <Text
-                    onPress={() => {
-                        onBack(selected)
-                        navigation.goBack();
-                    }}
-                    style={{ ...styles.text }}>Select gems for trade</Text> )}
+                {onBack && (
+                <>
+                    <Text style={{ ...styles.text, ...styles.smallText }}>Click the gems you'd like to include in the trade, then click Continue</Text>
+                
+                    <Text
+                        onPress={() => {
+                            onBack(selected)
+                            navigation.goBack();
+                        }}
+                        style={{ ...styles.text, ...styles.clickable }}
+                    >
+                        Continue
+                    </Text>
+                 </>   
+                )}
             </View>
         </>
     );

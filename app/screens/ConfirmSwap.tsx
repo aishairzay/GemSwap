@@ -19,6 +19,7 @@ export default function ConfirmSwap({ route, navigation }: Props) {
     const multisigJson = route.params.multisigJson;
 
     const [address, setAddress] = React.useState<string>("");
+    const [tradeStatus, setTradeStatus] = React.useState<string|null>(null);
 
     const [offeredGems, setOfferedGems] = React.useState<any[]>(
         multisigJson.arguments[0].value.map((a: any) => {
@@ -97,14 +98,14 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                             label="Their Collection"
                             address={offererAddress}
                         />
-                        <Text>What they give:</Text>
+                        <Text>What you receive:</Text>
                         <Text>{JSON.stringify(offeredGems)}</Text>
 
                         <NFTCollection
                             label="My Collection"
                             address={requestedAddress}
                         />
-                        <Text>What they take:</Text>
+                        <Text>What you give:</Text>
                         <Text>{JSON.stringify(requestedGems)}</Text>
                     </View>
                     <Text
@@ -115,27 +116,43 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                         }}
                         onPress={async () => {
                             // Build second half of multisig trade
+                            setTradeStatus("Trade Executing...");
                             const curAccount = await getFlowAccount();
                             const flowHelper = new FlowHelper(curAccount);
-                            const multiSigTx =
-                                await flowHelper.multiSigSignTransaction(
-                                    multisigJson,
-                                    transactions.SwapGems,
-                                    (arg: any, t: any) => [
-                                        arg(offeredGems, t.Array(t.UInt64)),
-                                        arg(requestedGems, t.Array(t.UInt64)),
-                                    ],
-                                    [offererAddress, requestedAddress],
-                                    true
+
+                            try {
+                                const multiSigTx =
+                                    await flowHelper.multiSigSignTransaction(
+                                        multisigJson,
+                                        transactions.SwapGems,
+                                        (arg: any, t: any) => [
+                                            arg(offeredGems, t.Array(t.UInt64)),
+                                            arg(requestedGems, t.Array(t.UInt64)),
+                                        ],
+                                        [offererAddress, requestedAddress],
+                                        true
+                                    );
+                                console.log(
+                                    "multiSigTx",
+                                    JSON.stringify(multiSigTx)
                                 );
-                            console.log(
-                                "multiSigTx",
-                                JSON.stringify(multiSigTx)
-                            );
+                                setTradeStatus("Trade Confirmed!");
+                            } catch (e) {
+                                setTradeStatus("Trade Failed")
+                            }
                         }}
                     >
                         Confirm Trade
                     </Text>
+                    {tradeStatus && (
+                        <Text
+                            style={{
+                                ...styles.text,
+                            }}
+                        >
+                            {tradeStatus}
+                        </Text>
+                    )}
                 </ScrollView>
             </View>
         </>

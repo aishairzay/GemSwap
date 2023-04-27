@@ -9,6 +9,7 @@ import { styles } from "../utils/styles";
 import { transactions } from "../../flow/CadenceToJson.json";
 import QRCode from "react-native-qrcode-svg";
 import axios from "axios";
+import GemList from "../../components/GemList";
 
 type Props = {
     navigation: any;
@@ -99,14 +100,14 @@ export default function ConfirmSwap({ route, navigation }: Props) {
                             address={offererAddress}
                         />
                         <Text>What you receive:</Text>
-                        <Text>{JSON.stringify(offeredGems)}</Text>
+                        <GemList address={offererAddress} gemIDs={offeredGems} />
 
                         <NFTCollection
                             label="My Collection"
                             address={requestedAddress}
                         />
                         <Text>What you give:</Text>
-                        <Text>{JSON.stringify(requestedGems)}</Text>
+                        <GemList address={requestedAddress} gemIDs={requestedGems} />
                     </View>
                     <Text
                         style={{

@@ -13,6 +13,7 @@ import { styles } from '../utils/styles'
 import { transactions } from '../../flow/CadenceToJson.json';
 import QRCode from 'react-native-qrcode-svg';
 import axios from "axios";
+import GemList from "../../components/GemList";
 var LZUTF8 = require('lzutf8');
 
 type Props = {
@@ -83,7 +84,6 @@ export default function Swap({ route, navigation }: Props) {
               >
                   <View style={{
                       paddingTop: insets.top,
-                      paddingBottom: insets.bottom,
                       paddingLeft: insets.left,
                       paddingRight: insets.right,
                   }}>
@@ -91,17 +91,13 @@ export default function Swap({ route, navigation }: Props) {
                             setOfferedGems(selectedGems)
                         }} />
                         <Text>Offered Gems:</Text>
-                        <Text>
-                            {JSON.stringify(offeredGems)}
-                        </Text>
+                        <GemList address={address} gemIDs={offeredGems} />
 
                         <NFTCollection label={`Select Gems to Receive`} address={otherAddress} onBack={(selectedGems: [number]) => {
                             setRequestedGems(selectedGems)
                         }} />
                         <Text>Requested Gems:</Text>
-                        <Text>
-                            {JSON.stringify(requestedGems)}
-                        </Text>
+                        <GemList address={otherAddress} gemIDs={requestedGems} />
                   </View>
                   <Text
                     style={{
@@ -123,28 +119,9 @@ export default function Swap({ route, navigation }: Props) {
                             [address, otherAddress],
                             false
                         )
-                        console.log('multiSigTx', JSON.stringify(multiSigTx))
-
                         const compressed = LZUTF8.compress(JSON.stringify(multiSigTx), {outputEncoding: 'Base64'})
-                        console.log('compressed is', compressed)
-                        // convert compressed which is a byte array into a string
-                        
 
                         setQRCodeData(compressed)
-                        /*
-                        const headers = {
-                            'Content-Type': 'application/json',
-                            'X-Master-key': '$2b$10$eO7hvOmrgihsZ5416p0xmey6M4lh0dx7gFnGDMfG7tRrnQu8V4ZPm',
-                            'X-Bin-private': "false"
-                          }
-                        const response = await axios.post('https://api.jsonbin.io/v3/b', JSON.stringify(multiSigTx), {
-                            headers: headers
-                        })
-                        console.log('response is', response.data.metadata.id)
-                        const id = response.data.metadata.id
-                        console.log(`MultiSig available at https://api.jsonbin.io/v3/b/${id}`)
-                        setQRCodeData(`https://api.jsonbin.io/v3/b/${id}`)
-                        */
                     }}
                   >
                     Propose Trade
@@ -157,7 +134,7 @@ export default function Swap({ route, navigation }: Props) {
                             <View style={{marginTop: 20}}></View>
                             <QRCode
                                 value={qrCodeData}
-                                size={300}
+                                size={260}
                                 ecl="L"
                             />
                             <Text>{`
